@@ -3,6 +3,8 @@
 #ifdef LEMONEX
   cp = strrchr(lemp->filename,'/');
   if(!ofiledir) cp++;
+  if(*cp == '.') cp++;
+  if(*cp == '/') cp++;
   if(cp == 0)
       cp = strrchr(lemp->filename,'\\');
   if(cp == 0)

@@ -3,12 +3,13 @@
 %include {
 #include <string.h>
 }
+
 %syntax_error {
-  printf("syntax_error\n");
+  puts("Syntax error!");
 }
 
 %parse_accept {
-  printf("parsing complete!\n");
+  puts("parsing complete!");
 }
 
 %token_prefix TK_

@@ -105,7 +105,7 @@ int ParseReadString(
 #line 3 "./example/parse.y"
 
 #include <string.h>
-#line 108 "example/parser/parse.c"
+#line 108 "example/parse/parse.c"
 #define LEMONEX_DBGLVL 0
 #include "parse.h"
 /* Next is all token values, in a form suitable for use by makeheaders.
@@ -1505,11 +1505,11 @@ static void yy_reduce(
   **     break;
   */
       case 0: /* rModule ::= EOF */
-#line 21 "./example/parse.y"
+#line 22 "./example/parse.y"
 {
   yy_destructor(yypParser,4,&yymsp[0].minor);
 }
-#line 2738 "example/parser/parse.c"
+#line 2738 "example/parse/parse.c"
         break;
       default:
         break;
@@ -1570,10 +1570,10 @@ static void yy_syntax_error(
 ){
   ParseARG_FETCH;
 #define TOKEN (yyminor.yy0)
-#line 6 "./example/parse.y"
+#line 7 "./example/parse.y"
 
-  printf("syntax_error\n");
-#line 2802 "example/parser/parse.c"
+  puts("Syntax error!");
+#line 2802 "example/parse/parse.c"
   ParseARG_STORE; /* Suppress warning about unused %extra_argument variable */
 }
 
@@ -1592,10 +1592,10 @@ static void yy_accept(
   while( yypParser->yyidx>=0 ) yy_pop_parser_stack(yypParser);
   /* Here code is inserted which will be executed whenever the
   ** parser accepts */
-#line 10 "./example/parse.y"
+#line 11 "./example/parse.y"
 
-  printf("parsing complete!\n");
-#line 2824 "example/parser/parse.c"
+  puts("parsing complete!");
+#line 2824 "example/parse/parse.c"
   ParseARG_STORE; /* Suppress warning about unused %extra_argument variable */
 }
 
@@ -1844,9 +1844,9 @@ L0:
     case 16:goto S16;
   }
 S1:
-  /*1[47(/)-0( )]->3:tx_type:0, is_cap:1*/  if(ch == 47){LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(3);goto S3; /*1*/}
-  /*1[97(a)-0( )]->5:tx_type:0, is_cap:1*/  if(ch == 97){LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(5);goto S5; /*1*/}
-  /*1[0( )-5( )]->2:tx_type:0, is_cap:0*/  if(ch != 0){LX_ADVANCE(2);goto S2; /*1*/}
+  if(ch == 47){LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(3);goto S3; /*1*/}
+  if(ch == 97){LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(5);goto S5; /*1*/}
+  if(ch != 0){LX_ADVANCE(2);goto S2; /*1*/}
   lxpLexer->lxstate=1;return 0;
   
 S2:
@@ -1855,7 +1855,7 @@ S2:
   if(ch == 0) {LX_SEND(0);return 0;}
   goto S1; /* by init_state */
 S3:
-  /*3[42(*)-0( )]->4:tx_type:0, is_cap:1*/  if(ch == 42){LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(4);goto S4; /*1*/}
+  if(ch == 42){LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(4);goto S4; /*1*/}
   if(ch == 0){lxpLexer->lxstate=3;return 0;}
   goto S2; /* by goto_state */
 S4:
@@ -1871,15 +1871,15 @@ S5:
   LX_ENTER_NESTING(1);
   goto S12; /* by retn_state */
 S6:
-  /*6[42(*)-0( )]->7:tx_type:0, is_cap:1*/  if(ch == 42){LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(7);goto S7; /*1*/}
-  /*6[42(*)-0( )]->7:tx_type:2, is_cap:1*/  if(ch == 42){  LX_ACTION(6);/*NO_SEND*/LX_RESET;LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(7);goto S7; /*1*/}
-  /*6[0( )-0( )]->9:tx_type:4, is_cap:0*/  /*loop --> 9*/
-  /*6[0( )-5( )]->11:tx_type:0, is_cap:1*/  if(ch != 0){LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(11);goto S11; /*1*/}
+  if(ch == 42){LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(7);goto S7; /*1*/}
+  if(ch == 42){  LX_ACTION(6);/*NO_SEND*/LX_RESET;LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(7);goto S7; /*1*/}
+  /*loop --> 9*/
+  if(ch != 0){LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(11);goto S11; /*1*/}
   if(is_final == 0) {lxpLexer->lxstate=6;return 0;}
   LX_SEND(0);return 0;
   
 S7:
-  /*7[47(/)-0( )]->8:tx_type:0, is_cap:1*/  if(ch == 47){LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(8);goto S8; /*1*/}
+  if(ch == 47){LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(8);goto S8; /*1*/}
   if(ch == 0){lxpLexer->lxstate=7;return 0;}
   goto S9; /* by goto_state */
 S8:
@@ -1889,8 +1889,8 @@ S8:
   if(LX_LEAVE_NESTING() == 1){goto L0;}
   goto S6; /* by next_state */
 S9:
-  /*9[42(*)-0( )]->7:tx_type:2, is_cap:1*/  if(ch == 42){  LX_ACTION(9);/*NO_SEND*/LX_RESET;LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(7);goto S7; /*1*/}
-  /*9[0( )-5( )]->10:tx_type:0, is_cap:1*/  if(ch != 0){LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(10);goto S10; /*1*/}
+  if(ch == 42){  LX_ACTION(9);/*NO_SEND*/LX_RESET;LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(7);goto S7; /*1*/}
+  if(ch != 0){LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(10);goto S10; /*1*/}
   if(is_final == 0) {lxpLexer->lxstate=9;return 0;}
   LX_SEND(0);return 0;
   
@@ -1899,10 +1899,10 @@ S10:
 S11:
   goto S10; /* by goto_state */
 S12:
-  /*12[99(c)-0( )]->13:tx_type:0, is_cap:1*/  if(ch == 99){LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(13);goto S13; /*1*/}
-  /*12[99(c)-0( )]->13:tx_type:2, is_cap:1*/  if(ch == 99){  LX_ACTION(12);/*NO_SEND*/LX_RESET;LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(13);goto S13; /*1*/}
-  /*12[0( )-0( )]->14:tx_type:4, is_cap:0*/  /*loop --> 14*/
-  /*12[0( )-5( )]->16:tx_type:0, is_cap:1*/  if(ch != 0){LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(16);goto S16; /*1*/}
+  if(ch == 99){LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(13);goto S13; /*1*/}
+  if(ch == 99){  LX_ACTION(12);/*NO_SEND*/LX_RESET;LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(13);goto S13; /*1*/}
+  /*loop --> 14*/
+  if(ch != 0){LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(16);goto S16; /*1*/}
   if(is_final == 0) {lxpLexer->lxstate=12;return 0;}
   LX_SEND(0);return 0;
   
@@ -1913,8 +1913,8 @@ S13:
   if(LX_LEAVE_NESTING() == 1){goto L0;}
   goto S12; /* by next_state */
 S14:
-  /*14[99(c)-0( )]->13:tx_type:2, is_cap:1*/  if(ch == 99){  LX_ACTION(14);/*NO_SEND*/LX_RESET;LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(13);goto S13; /*1*/}
-  /*14[0( )-5( )]->15:tx_type:0, is_cap:1*/  if(ch != 0){LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(15);goto S15; /*1*/}
+  if(ch == 99){  LX_ACTION(14);/*NO_SEND*/LX_RESET;LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(13);goto S13; /*1*/}
+  if(ch != 0){LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(15);goto S15; /*1*/}
   if(is_final == 0) {lxpLexer->lxstate=14;return 0;}
   LX_SEND(0);return 0;
   
@@ -2070,7 +2070,7 @@ int ParseReadFile(
   return 0;
 }
 #endif /* LEMONEX */
-#line 40 "./example/parse.y"
+#line 41 "./example/parse.y"
 
 int main(int argc, char* argv[]) {
   if(ParseReadString("/*abadcgc*/", "<string>", "DEBUG: ") != 0) {
@@ -2078,4 +2078,4 @@ int main(int argc, char* argv[]) {
   } else printf("Success\n");
   return 0;
 }
-#line 3307 "example/parser/parse.c"
+#line 3307 "example/parse/parse.c"
