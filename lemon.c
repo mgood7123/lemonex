@@ -2106,7 +2106,6 @@ enum e_state {
   WAITING_FOR_WILDCARD_ID,
   WAITING_FOR_CLASS_ID,
   WAITING_FOR_CLASS_TOKEN,
-  WAITING_FOR_TOKEN_NAME
 #ifdef lex_lemon_enum_e_state_h
 #include "lex/lemon/enum/e_state.h"
 #endif
