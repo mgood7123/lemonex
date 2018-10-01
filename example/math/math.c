@@ -66,14 +66,14 @@ struct lxToken{
 };
 #endif /* LEMONEX */
 #define YYCODETYPE unsigned char
-#define YYNOCODE 10
+#define YYNOCODE 9
 #define YYACTIONTYPE unsigned char
 #if INTERFACE
 #ifdef LEMONEX
-#define ParseTOKENTYPE int
-#define ParseTOKENTYPE_DEF 0
+#define ParseTOKENTYPE struct lxToken
+#define ParseTOKENTYPE_DEF 1
 #else /* LEMONEX */
-#define ParseTOKENTYPE int
+#define ParseTOKENTYPE void*
 #endif /* LEMONEX */
 #endif
 typedef union {
@@ -812,16 +812,16 @@ static int lxcls_e[] = {
   0x964   ,0x965   ,  0,0
 };
 #endif
-#define YYNSTATE             6
-#define YYNRULE              6
-#define YY_MAX_SHIFT         5
-#define YY_MIN_SHIFTREDUCE   11
-#define YY_MAX_SHIFTREDUCE   16
-#define YY_MIN_REDUCE        17
-#define YY_MAX_REDUCE        22
-#define YY_ERROR_ACTION      23
-#define YY_ACCEPT_ACTION     24
-#define YY_NO_ACTION         25
+#define YYNSTATE             1
+#define YYNRULE              1
+#define YY_MAX_SHIFT         0
+#define YY_MIN_SHIFTREDUCE   1
+#define YY_MAX_SHIFTREDUCE   1
+#define YY_MIN_REDUCE        2
+#define YY_MAX_REDUCE        2
+#define YY_ERROR_ACTION      3
+#define YY_ACCEPT_ACTION     4
+#define YY_NO_ACTION         5
 
 /* returns 1 if ch is in cls */
 static int lx_isclass(int ch, int* clsl){
@@ -965,31 +965,29 @@ static const YYMINORTYPE yyzerominor = { 0 };
 **                     shifting non-terminals after a reduce.
 **  yy_default[]       Default action for each state.
 */
-#define YY_ACTTAB_COUNT (14)
+#define YY_ACTTAB_COUNT (2)
 static const YYACTIONTYPE yy_action[] = {
- /*     0 */    17,    1,    2,    4,    3,   24,    5,   16,   19,   15,
- /*    10 */    19,   14,   13,   12,
+ /*     0 */     2,    4,
 };
 static const YYCODETYPE yy_lookahead[] = {
- /*     0 */     0,    1,    2,    3,    4,    7,    8,    5,    9,    8,
- /*    10 */     9,    8,    8,    8,
+ /*     0 */     0,    7,
 };
 #define YY_SHIFT_USE_DFLT (-1)
-#define YY_SHIFT_COUNT (5)
+#define YY_SHIFT_COUNT (0)
 #define YY_SHIFT_MIN   (0)
-#define YY_SHIFT_MAX   (2)
+#define YY_SHIFT_MAX   (0)
 static const signed char yy_shift_ofst[] = {
- /*     0 */     2,    2,    2,    2,    2,    0,
+ /*     0 */     0,
 };
-#define YY_REDUCE_USE_DFLT (-3)
-#define YY_REDUCE_COUNT (4)
-#define YY_REDUCE_MIN   (-2)
-#define YY_REDUCE_MAX   (5)
+#define YY_REDUCE_USE_DFLT (-7)
+#define YY_REDUCE_COUNT (0)
+#define YY_REDUCE_MIN   (-6)
+#define YY_REDUCE_MAX   (0)
 static const signed char yy_reduce_ofst[] = {
- /*     0 */    -2,    1,    3,    4,    5,
+ /*     0 */    -6,
 };
 static const YYACTIONTYPE yy_default[] = {
- /*     0 */    23,   23,   23,   23,   23,   23,
+ /*     0 */     3,
 };
 
 /* The next table maps tokens into fallback tokens.  If a construct
@@ -1092,8 +1090,7 @@ void ParseTrace(FILE *TraceFILE, char *zTracePrompt){
 ** are required.  The following table supplies these names */
 static const char *const yyTokenName[] = { 
   "$",             "DIVIDE",        "TIMES",         "MINUS",       
-  "PLUS",          "INTEGER",       "error",         "program",     
-  "expr",        
+  "PLUS",          "INTEGER",       "error",         "rModule",     
 };
 #endif /* NDEBUG */
 
@@ -1101,12 +1098,7 @@ static const char *const yyTokenName[] = {
 /* For tracing reduce actions, the names of all rules are required.
 */
 static const char *const yyRuleName[] = {
- /*   0 */ "program ::= expr",
- /*   1 */ "expr ::= expr MINUS expr",
- /*   2 */ "expr ::= expr PLUS expr",
- /*   3 */ "expr ::= expr TIMES expr",
- /*   4 */ "expr ::= expr DIVIDE expr",
- /*   5 */ "expr ::= INTEGER",
+ /*   0 */ "rModule ::=",
 };
 #endif /* NDEBUG */
 
@@ -1190,6 +1182,16 @@ static void yy_destructor(
     ** which appear on the RHS of the rule, but which are not used
     ** inside the C code.
     */
+      /* TERMINAL Destructor */
+    case 1: /* DIVIDE */
+    case 2: /* TIMES */
+    case 3: /* MINUS */
+    case 4: /* PLUS */
+    case 5: /* INTEGER */
+#ifdef LEMONEX
+      LX_FREETOK;
+#endif /*LEMONEX*/
+      break;
     default:  break;   /* If no destructor action specified: do nothing */
   }
 }
@@ -1443,12 +1445,7 @@ static const struct {
   YYCODETYPE lhs;         /* Symbol on the left-hand side of the rule */
   unsigned char nrhs;     /* Number of right-hand side symbols in the rule */
 } yyRuleInfo[] = {
-  { 7, 1 },
-  { 8, 3 },
-  { 8, 3 },
-  { 8, 3 },
-  { 8, 3 },
-  { 8, 1 },
+  { 7, 0 },
 };
 
 static void yy_accept(yyParser*);  /* Forward Declaration */
@@ -1504,44 +1501,8 @@ static void yy_reduce(
   **  #line <lineno> <thisfile>
   **     break;
   */
-      case 0: /* program ::= expr */
-#line 19 "example/math.y"
-{ printf("Result=%d\n", yymsp[0].minor.yy0); }
-#line 2736 "./example/math/math.c"
-        break;
-      case 1: /* expr ::= expr MINUS expr */
-#line 20 "example/math.y"
-{ yygotominor.yy0 = yymsp[-2].minor.yy0 - yymsp[0].minor.yy0; }
-#line 2741 "./example/math/math.c"
-        break;
-      case 2: /* expr ::= expr PLUS expr */
-#line 21 "example/math.y"
-{ yygotominor.yy0 = yymsp[-2].minor.yy0 + yymsp[0].minor.yy0; }
-#line 2746 "./example/math/math.c"
-        break;
-      case 3: /* expr ::= expr TIMES expr */
-#line 22 "example/math.y"
-{ yygotominor.yy0 = yymsp[-2].minor.yy0 * yymsp[0].minor.yy0; }
-#line 2751 "./example/math/math.c"
-        break;
-      case 4: /* expr ::= expr DIVIDE expr */
-#line 23 "example/math.y"
-{
-
-         if(yymsp[0].minor.yy0 != 0){
-           yygotominor.yy0 = yymsp[-2].minor.yy0 / yymsp[0].minor.yy0;
-          }else{
-           puts("divide by zero");
-           }
-}
-#line 2763 "./example/math/math.c"
-        break;
-      case 5: /* expr ::= INTEGER */
-#line 32 "example/math.y"
-{ yygotominor.yy0 = yymsp[0].minor.yy0; }
-#line 2768 "./example/math/math.c"
-        break;
       default:
+      /* (0) rModule ::= */ yytestcase(yyruleno==0);
         break;
   };
   yygoto = yyRuleInfo[yyruleno].lhs;
@@ -1600,10 +1561,10 @@ static void yy_syntax_error(
 ){
   ParseARG_FETCH;
 #define TOKEN (yyminor.yy0)
-#line 13 "example/math.y"
+#line 12 "example/math.y"
 
   puts("Syntax error!");
-#line 2832 "./example/math/math.c"
+#line 2793 "./example/math/math.c"
   ParseARG_STORE; /* Suppress warning about unused %extra_argument variable */
 }
 
@@ -1804,6 +1765,14 @@ void Parse(
 /* The lexer code */
 
 /* The regex actions */
+static void lx_state_action_2(lxLexer *lxpLexer){ printf("Recieved WORD %s\n", (lxpLexer->token).buf); }
+static void lx_state_action_4(lxLexer *lxpLexer){ printf("Recieved NUMBER %s\n", (lxpLexer->token).buf); }
+static void lx_state_action_5(lxLexer *lxpLexer){ printf("Recieved PLUS %s\n", (lxpLexer->token).buf); }
+static void lx_state_action_6(lxLexer *lxpLexer){ printf("Recieved TIMES %s\n", (lxpLexer->token).buf); }
+static void lx_state_action_7(lxLexer *lxpLexer){ printf("Recieved EOL %s\n", (lxpLexer->token).buf); }
+static void lx_state_action_8(lxLexer *lxpLexer){ printf("HD_%s: %s\n", "CONTENTS", (lxpLexer->token).buf); }
+static void lx_state_action_9(lxLexer *lxpLexer){ printf("COMMENT_%s: %s\n", "END", (lxpLexer->token).buf); }
+static void lx_state_action_10(lxLexer *lxpLexer){ printf("HD_%s: %s\n", "CONTENTS", (lxpLexer->token).buf); }
 #define LX_ACTION(s) lx_state_action_##s(lxpLexer)
 
 /* The main lexer */
@@ -1831,7 +1800,90 @@ int ParseRead(
   LX_ADVANCE(lxpLexer->lxstate);
 L0:
   switch(lxpLexer->lxstate) {
+    case 1:goto S1;
+    case 2:goto S2;
+    case 3:goto S3;
+    case 4:goto S4;
+    case 5:goto S5;
+    case 6:goto S6;
+    case 7:goto S7;
+    case 8:goto S8;
+    case 9:goto S9;
+    case 10:goto S10;
+    case 11:goto S11;
+    case 12:goto S12;
+    case 13:goto S13;
+    case 14:goto S14;
   }
+S1:
+  if(ch == 42){LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(6);goto S6; /*1*/}
+  if(ch == 43){LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(5);goto S5; /*1*/}
+  if(ch == 124){LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(7);goto S7; /*1*/}
+  if(LX_ISDIGIT(ch)==1){LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(4);goto S4; /*1*/}
+  /*loop --> 2*/
+  if(ch == 0){lxpLexer->lxstate=1;return 0;}
+  LX_SENDERR(6);return -1;
+S2:
+  if(LX_ISDIGIT(ch)==1){LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(3);goto S3; /*1*/}
+  if((ch == 0) && (is_final == 0)) {lxpLexer->lxstate=2;return 0;}
+  LX_ACTION(2);/*NO_SEND*/LX_RESET;
+  if(ch == 0) {LX_SEND(0);return 0;}
+  goto S1; /* by init_state */
+S3:
+  goto S2; /* by goto_state */
+S4:
+  if((ch == 0) && (is_final == 0)) {lxpLexer->lxstate=4;return 0;}
+  LX_ACTION(4);/*NO_SEND*/LX_RESET;
+  if(ch == 0) {LX_SEND(0);return 0;}
+  goto S1; /* by init_state */
+S5:
+  if((ch == 0) && (is_final == 0)) {lxpLexer->lxstate=5;return 0;}
+  LX_ACTION(5);/*NO_SEND*/LX_RESET;
+  if(ch == 0) {LX_SEND(0);return 0;}
+  goto S1; /* by init_state */
+S6:
+  if((ch == 0) && (is_final == 0)) {lxpLexer->lxstate=6;return 0;}
+  LX_ACTION(6);/*NO_SEND*/LX_RESET;
+  if(ch == 0) {LX_SEND(0);return 0;}
+  goto S1; /* by init_state */
+S7:
+  if((ch == 0) && (is_final == 0)) {lxpLexer->lxstate=7;return 0;}
+  LX_ACTION(7);/*NO_SEND*/LX_RESET;
+  if(ch == 0) {LX_SEND(0);return 0;}
+  goto S1; /* by init_state */
+S8:
+  if(ch == 53){LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(9);goto S9; /*1*/}
+  if(ch == 53){  LX_ACTION(8);/*NO_SEND*/LX_RESET;LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(9);goto S9; /*1*/}
+  /*loop --> 10*/
+  if(ch != 0){LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(12);goto S12; /*1*/}
+  if(is_final == 0) {lxpLexer->lxstate=8;return 0;}
+  LX_SEND(0);return 0;
+  
+S9:
+  if((ch == 0) && (is_final == 0)) {lxpLexer->lxstate=9;return 0;}
+  LX_ACTION(9);/*NO_SEND*/LX_RESET;
+  if(ch == 0) {LX_SEND(0);return 0;}
+  if(LX_LEAVE_NESTING() == 1){goto L0;}
+  goto S8; /* by next_state */
+S10:
+  if(ch == 53){  LX_ACTION(10);/*NO_SEND*/LX_RESET;LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(9);goto S9; /*1*/}
+  if(ch != 0){LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(11);goto S11; /*1*/}
+  if(is_final == 0) {lxpLexer->lxstate=10;return 0;}
+  LX_SEND(0);return 0;
+  
+S11:
+  goto S10; /* by goto_state */
+S12:
+  goto S11; /* by goto_state */
+S13:
+  if(ch == 65){LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(14);goto S14; /*1*/}
+  if(ch == 0){lxpLexer->lxstate=13;return 0;}
+  LX_SENDERR(6);return -1;
+S14:
+  if((ch == 0) && (is_final == 0)) {lxpLexer->lxstate=14;return 0;}
+  /*NO_SEND*/LX_RESET;
+  if(ch == 0) {LX_SEND(0);return 0;}
+  goto S13; /* by init_state */
 
   return 0;
 }
@@ -1980,50 +2032,49 @@ int ParseReadFile(
   return 0;
 }
 #endif /* LEMONEX */
-#line 34 "example/math.y"
+#line 47 "example/math.y"
 
 	int main()
 	{
-	void* pParser = ParseAlloc (malloc);
-
-	/* First input:
-		15 / 5
-									*/
-	Parse (pParser, INTEGER, 15);
-	Parse (pParser, TIMES, 0);
-	Parse (pParser, INTEGER, 5);
-	Parse (pParser, 0, 0);
-
-	/*  Second input:
-			50 + 125
-								*/
-
-
-	Parse (pParser, INTEGER, 50);
-	Parse (pParser, PLUS, 0);
-	Parse (pParser, INTEGER, 125);
-	Parse (pParser, 0, 0);
-
-
-	/*  Third input:
-			50 * 125 + 125
-								*/
-
-
-	Parse (pParser, INTEGER, 2);//	2	(2)			2	(2)		5	(5)
-	Parse (pParser, TIMES, 0);//	x				x			+
-	Parse (pParser, INTEGER, 5);//	5	(10)		5	(7)		15	(20)
-	Parse (pParser, PLUS, 0);//		+				+			x
-	Parse (pParser, INTEGER, 15);//	15	(10+15)		15	(7x15)	2	(20x2)
-	Parse (pParser, 0, 0);//		=	25			=	105		=	40
-
-
-	ParseFree(pParser, free );
-// 	puts("parsing 5+5");
-// 	if(ParseReadString("5+5", "<string>", "DEBUG: ") != 0) {
-// 		printf("Error\n");
-// 	} else printf("Success\n");
-
+// 	void* pParser = ParseAlloc (malloc);
+// 
+// 	/* First input:
+// 		15 / 5
+// 									*/
+// 	Parse (pParser, INTEGER, 15);
+// 	Parse (pParser, TIMES, 0);
+// 	Parse (pParser, INTEGER, 5);
+// 	Parse (pParser, 0, 0);
+// 
+// 	/*  Second input:
+// 			50 + 125
+// 								*/
+// 
+// 
+// 	Parse (pParser, INTEGER, 50);
+// 	Parse (pParser, PLUS, 0);
+// 	Parse (pParser, INTEGER, 125);
+// 	Parse (pParser, 0, 0);
+// 
+// 
+// 	/*  Third input:
+// 			50 * 125 + 125
+// 								*/
+// 
+// 
+// 	Parse (pParser, INTEGER, 2);//	2	(2)			2	(2)		5	(5)
+// 	Parse (pParser, TIMES, 0);//	x				x			+
+// 	Parse (pParser, INTEGER, 5);//	5	(10)		5	(7)		15	(20)
+// 	Parse (pParser, PLUS, 0);//		+				+			x
+// 	Parse (pParser, INTEGER, 15);//	15	(10+15)		15	(7x15)	2	(20x2)
+// 	Parse (pParser, 0, 0);//		=	25			=	105		=	40
+// 
+// 
+// 	ParseFree(pParser, free );
+	puts("parsing 5+5*5");
+	if(ParseReadString("5+5*5", "<string>", "DEBUG: ") != 0) {
+		printf("Error\n");
+	} else printf("Success\n");
 
 	}
-#line 3255 "./example/math/math.c"
+#line 3306 "./example/math/math.c"
