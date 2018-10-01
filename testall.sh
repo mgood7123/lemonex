@@ -1,7 +1,7 @@
 LDBG=0
 ALLT=0
 
-MLIST=`grep "%ifdef *" test.y | cut -f 2 -d " "`
+MLIST=`grep "%ifdef *" test/test.y | cut -f 2 -d " "`
 ALIST=
 while [[ "$1" != "" ]]; do
   case $1 in
@@ -25,13 +25,13 @@ done
 OSYS=""
 if [ "$(uname)" == "Darwin" ]; then
   OSYS=OSX
-  EXEFILE=lemon.osx
+  EXEFILE=test/lemon.osx
 elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
   OSYS=LINUX
-  EXEFILE=lemon.lnx
+  EXEFILE=test/lemon.lnx
 elif [ "$(expr substr $(uname -s) 1 9)" == "CYGWIN_NT" ]; then
   OSYS=CYGWIN
-  EXEFILE=lemon.exe
+  EXEFILE=test/lemon.exe
   if [ -n "${VS140COMNTxOOLS+1}" ]; then
     VST=$VS140COMNTOOLS
   elif [ -n "${VS120COMNTOOLS+1}" ]; then
@@ -52,7 +52,7 @@ elif [ "$(expr substr $(uname -s) 1 9)" == "CYGWIN_NT" ]; then
   LIB2="${WVSDIR}..\\Microsoft SDKs\Windows\v7.1A\Lib"
 fi
 
-rm -f test.c test.h test.out
+rm -f test/test.c test/test.h test/test.out
 
 PLIST=
 FLIST=
@@ -115,7 +115,7 @@ function chk {
 }
 
 case $OSYS in
-   OSX)
+   OSX|LINUX)
      clang -g -DLEMONEX_DBG=$LDBG -o $EXEFILE ./lemon.c
      ;;
 
@@ -134,19 +134,19 @@ if [ $? -ne 0 ]; then
 fi
 
 for MODE in $MLIST; do
-  ./$EXEFILE T=./lempar.c D=$MODE d=./ test.y
+  ./$EXEFILE T=./lempar.c D=$MODE d=test test/test.y
   chk G $? $MODE "error generating parser in $MODE"
   if [ $? -ne 0 ]; then
     continue
   fi
 
   case $OSYS in
-     OSX)
-       clang -g -D$MODE -o test test.c
+     OSX|LINUX)
+       clang -g -D$MODE -o test/test test/test.c
        ;;
 
      CYGWIN)
-       cl.exe -nologo -I"$INCLUDE" -D$MODE test.c -link -LIBPATH:"$LIB" -LIBPATH:"$LIB2"
+       cl.exe -nologo -I"$INCLUDE" -D$MODE test/test.c -link -LIBPATH:"$LIB" -LIBPATH:"$LIB2"
        ;;
 
      *)
@@ -158,7 +158,7 @@ for MODE in $MLIST; do
     continue
   fi
 
-  ./test
+  ./test/test
   chk R $? $MODE "error running parser in $MODE"
 
   PLIST="$PLIST $MODE"

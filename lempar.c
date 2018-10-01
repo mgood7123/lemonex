@@ -1,24 +1,12 @@
 /* Driver template for the LEMON parser generator.
 ** The author disclaims copyright to this source code.
 */
-/* First off, code is included that follows the "include" declaration
-** in the input grammar file. */
-%%
+/* to be able to use certain functions in %include directives we first need to define them */
 /* The include code might contain pch header, so include stdio.h here */
 #include <stdio.h>
+#include <assert.h> // this uses assert
+#include <stdlib.h> // uses callbacks to free and malloc, have them already available
 #define LEMONEX 1
-
-/* Next is all token values, in a form suitable for use by makeheaders.
-** This section will be null unless lemon is run with the -m switch.
-*/
-/* 
-** These constants (all generated automatically by the parser generator)
-** specify the various kinds of tokens (terminals) that the parser
-** understands. 
-**
-** Each symbol here is a terminal symbol in the grammar.
-*/
-%%
 /* Make sure the INTERFACE macro is defined.
 */
 #ifndef INTERFACE
@@ -77,9 +65,23 @@ struct lxToken{
   const char* filename;
 };
 #endif /* LEMONEX */
-
 %%
-
+/* declare function definitions here, this will be blank if there are no definitions */
+%%
+/* First off, code is included that follows the "include" declaration
+** in the input grammar file. */
+%%
+/* Next is all token values, in a form suitable for use by makeheaders.
+** This section will be null unless lemon is run with the -m switch.
+*/
+/* 
+** These constants (all generated automatically by the parser generator)
+** specify the various kinds of tokens (terminals) that the parser
+** understands. 
+**
+** Each symbol here is a terminal symbol in the grammar.
+*/
+%%
 #if LEMONEX
 #ifdef ParseLX_NESTINGDEPTH
 struct lxNestingFrame {
