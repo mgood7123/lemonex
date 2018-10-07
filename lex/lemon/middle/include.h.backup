@@ -239,8 +239,6 @@ struct LxMode *LxMode_new(struct pstate *psp, const char *mode_name){
 struct LxAstNode *LxNode_create(int node_type, struct LxAstNode *lhs, struct LxAstNode *rhs, int ch0, int ch1){
 #if LEMONEX_DBG>=2
 	puts("creating node");
-	pc(ch0);
-	pi(ch1);
 #endif
 	struct LxAstNode *node = (struct LxAstNode *)malloc(sizeof(struct LxAstNode));
 	node->node_type = node_type;
@@ -801,6 +799,7 @@ struct LxAstNode *lx_expr(struct LxScanner *s);
 
 struct LxAstNode *lx_primary_expr(struct LxScanner *s, int chk_range){
 	int ch0 = lx_lookahead(s);
+//  printf("primary_expr:%c\n", ch0);
 	if(ch0 == 0){
 		return 0;
 	}
@@ -854,8 +853,7 @@ struct LxAstNode *lx_inner_expr(struct LxScanner *s){
 	struct LxAstNode *lhs = 0;
 	struct LxAstNode *rhs = 0;
 	int tx_type = REGULAR_TX;
-	// if regex is a variable, do not attempt to process an expression, leave it as is
-	if (!is_current_state_a_variable) switch(lx_lookahead(s)){
+	switch(lx_lookahead(s)){
 		case '(':
 			lx_advance(s);
 			lhs = lx_expr(s);
@@ -1220,7 +1218,7 @@ void Lexer_generate_class_list(struct lemon *lemp, FILE *fp, int *lineno){
 	fprintf(fp, "};\n");(*lineno)++;
 }
 
-static void lx_generate_send(struct lemon* lemp, FILE* out, struct LxState *curr_state, char * name){
+static void lx_generate_send(struct lemon* lemp, FILE* out, struct LxState *curr_state){
 	/* generate user action code if specified */
 	if(curr_state->code != 0){
 		fprintf(out, "  LX_ACTION(%d);", curr_state->state_id);
@@ -1242,7 +1240,7 @@ static void lx_generate_send(struct lemon* lemp, FILE* out, struct LxState *curr
 	}
 
 	/* reset current capture */
-	if (name == NULL) fprintf(out, "LX_RESET;");
+	fprintf(out, "LX_RESET;");
 }
 
 static void lx_generate_conditions(struct lemon* lemp, FILE* out, int *lineno, struct LxState *curr_state, struct LxTransition *tx){
@@ -1271,17 +1269,16 @@ static void lx_generate_conditions(struct lemon* lemp, FILE* out, int *lineno, s
 				exit(1);
 		}
 	}else if(tx->ch1 == 0){
-		if (tx->is_variable) if (tx->idx != 0) fprintf(out, "//");
 	str_new(q);
 	str_new(ch);
 	str_insert_char(ch, tx->ch0);
 	str_insert_char(ch, '\0');
 	str_insert_string(q, ch.string);
 	str_free(ch);
-	fprintf(out, " if(ch == ");
+		fprintf(out, "  if(ch == ");
 	if (tx->is_variable) {
 		fprintf(out, "%s[%d]", tx->variable_name, tx->idx);
-	} else fprintf(out, "%d /* decimal is required for full unicode support, printable character is '%s' */ ", tx->ch0, q.escaped.string);
+	} else fprintf(out, "'%s' ", q.escaped.string);
 	str_free(q);
 	fprintf(out, ")");
 	}else{
@@ -1292,7 +1289,7 @@ static void lx_generate_conditions(struct lemon* lemp, FILE* out, int *lineno, s
 static void lx_generate_leaf(struct lemon* lemp, FILE* out, int *lineno, struct LxState *curr_state, int tx_type){
 	if(tx_type == NOT_TX){
 		if(curr_state->dot_transition == 0){
-			lx_generate_send(lemp, out, curr_state, NULL);
+			lx_generate_send(lemp, out, curr_state);
 		}
 		return;
 	}
@@ -1325,7 +1322,7 @@ static void lx_generate_leaf(struct lemon* lemp, FILE* out, int *lineno, struct 
 	fprintf(out, "}\n");(*lineno)++;
 
 	if((curr_state->not_transition == 0) && (curr_state->dot_transition == 0)){
-		lx_generate_send(lemp, out, curr_state, NULL);
+		lx_generate_send(lemp, out, curr_state);
 		fprintf(out, "\n");(*lineno)++;
 	}
 
@@ -1655,15 +1652,13 @@ int get_nested_goto(struct lemon* lemp, struct LxState* state) {
 					printf("INTERNAL-ERROR:invalid next-mode in state: %s\n", state->next_mode);
 					return -1;
 				}
-				if(next_mode->init_state != state->init_mode->init_state){
-					if (lemp->lxdebuglevel >= 2)printf("LX_ENTER_NESTING(%d):", state->init_mode->init_state->state_id);
-				}else{
-					if (lemp->lxdebuglevel >= 2)printf("LX_RENEW_NESTING:");
+				if(next_mode->init_state == state->init_mode->init_state){
+					printf("LX_RENEW_NESTING;");
 				}
 				return next_mode->init_state->state_id;
 			}else{
 				/* if next mode is <, return to calling mode */
-				if (lemp->lxdebuglevel >= 2)printf("if(LX_LEAVE_NESTING() == 1){TAG2 goto L0;}:goto %d:", state->init_mode->init_state->state_id);
+				printf("if(LX_LEAVE_NESTING() == 1){TAG2 goto L0;}");
 				return state->init_mode->init_state->state_id;
 			}
 		}else{
@@ -1679,99 +1674,6 @@ int * states_mode = NULL;
 
 int * states_trace = NULL;
 
-int * states_ne = NULL;
-int * states_nl = NULL;
-
-int nest_have = 0;
-
-#define NEST_ENTER 1
-#define NEST_LEAVE 2
-
-int find_nested_goto(struct lemon* lemp, int stateno, int nest_type, int isvar, char * destname) {
-	if (lemp->lxdebuglevel >= 2) pi(stateno);
-	if (lemp->lxdebuglevel >= 2) pi(nest_type);
-	int state_max = state_count(lemp);
-	struct LxState* state = find_state(lemp, stateno);
-	int g = get_nested_goto(lemp, state);
-	if (g != -1) {
-		if (lemp->lxdebuglevel >= 2) pi(g);
-			 if (nest_type == NEST_ENTER) {
-				 if (isvar == false) return stateno;
-				 else return g;
-			 }
-		else if (nest_type == NEST_LEAVE) {
-			// if current nest produces a leave, dont count it as it is a looped goto, get the nest after it
-			if (nest_have) return stateno;
-			if (!nest_have) nest_have = 1;
-		}
-	}
-	if (state != NULL) {
-		if (nest_type == NEST_ENTER) {
-			if (states_ne == NULL) {
-				states_ne = malloc(state_max*sizeof(int));
-				memset(states_ne, 0, state_max*sizeof(int));
-			}
-			states_ne[stateno]++;
-			if (states_ne[stateno] != 1)  {
-				if (lemp->lxdebuglevel >= 2) printf("find_nested_goto: enter loop detected, ");
-				return -1;
-			}
-		}
-		else if (nest_type == NEST_LEAVE) {
-			if (states_nl == NULL) {
-				states_nl = malloc(state_max*sizeof(int));
-				memset(states_nl, 0, state_max*sizeof(int));
-			}
-			states_nl[stateno]++;
-			if (states_nl[stateno] != 1)  {
-				if (lemp->lxdebuglevel >= 2) printf("find_nested_goto: leave loop detected, ");
-				return -1;
-			}
-		}
-		assert((state->code == 0) || (state->is_leaf != 0));
-		int states = get_tran_num(state);
-		if (states > 0) {
-			for (int i = 1; i <= states; i++) {
-				struct LxTransition* tx = get_tx(state, i);
-				if (tx != NULL) {
-					int needs_free = false;
-					char * name = get_name(state, tx, &needs_free);
-					if (name != NULL) {
-						if (strcmp(name, destname) != 0) {
-							if (needs_free == true) free(name);
-							continue;
-						}
-					}
-					if (needs_free == true) free(name);
-					if((tx->ch0 == 0) && (tx->ch1 == 0)){
-						if (lemp->lxdebuglevel >= 2) printf("/*loop --> %d*/, ", tx->next_state->state_id);
-					}
-					int gt = get_goto(tx);
-					if (gt != -1) {
-						if (lemp->lxdebuglevel >= 2) printf("NEST : tracing from %d to %d\n", stateno, gt);
-						int m = find_nested_goto(lemp, gt, nest_type, isvar, destname);
-						nest_have = 0; // reset variable back to 0
-						if (m == -1) return -1;
-						else return m;
-					}
-					else if (lemp->lxdebuglevel >= 2) printf("no goto for state %d\n", stateno);
-				}
-			}
-		}
-		else if(state->not_transition == 0){
-			int gt = get_nested_goto(lemp, state);
-			if (gt != -1) {
-				if (lemp->lxdebuglevel >= 2) printf("NEST : tracing from %d to %d, ", stateno, gt);
-				int m = find_nested_goto(lemp, gt, nest_type, isvar, destname);
-				if (m == -1) return -1;
-				else return m;
-			}
-		}
-		else if (lemp->lxdebuglevel >= 2) printf("no states for state %d\n", stateno);
-	}
-	return -1;
-}
-
 int find_mode(struct lemon* lemp, int stateno, char * origmode) {
 	int state_max = state_count(lemp);
 	struct LxState* state = find_state(lemp, stateno);
@@ -1782,7 +1684,7 @@ int find_mode(struct lemon* lemp, int stateno, char * origmode) {
 		}
 		states_mode[stateno]++;
 		if (states_mode[stateno] != 1)  {
-			if (lemp->lxdebuglevel >= 2) printf("find_mode: loop detected, ");
+			printf("find_mode: loop detected, ");
 			return -1;
 		}
 		assert((state->code == 0) || (state->is_leaf != 0));
@@ -1797,7 +1699,7 @@ int find_mode(struct lemon* lemp, int stateno, char * origmode) {
 						if (strcmp(mode, origmode) != 0) return state->state_id;
 					}
 					if((tx->ch0 == 0) && (tx->ch1 == 0)){
-						if (lemp->lxdebuglevel >= 2) printf("/*loop --> %d*/, ", tx->next_state->state_id);
+						printf("/*loop --> %d*/, ", tx->next_state->state_id);
 					}
 					int gt = get_goto(tx);
 					if (gt != -1) {
@@ -1805,7 +1707,7 @@ int find_mode(struct lemon* lemp, int stateno, char * origmode) {
 						if (m == -1) return -1;
 						else return m;
 					}
-					else if (lemp->lxdebuglevel >= 2) printf("no goto for state %d\n", stateno);
+					else printf("no goto for state %d\n", stateno);
 				}
 			}
 		}
@@ -1817,16 +1719,15 @@ int find_mode(struct lemon* lemp, int stateno, char * origmode) {
 				else return m;
 			}
 		}
-		else if (lemp->lxdebuglevel >= 2) printf("no states for state %d\n", stateno);
+		else printf("no states for state %d\n", stateno);
 	}
 	return -1;
 }
 
 int find_action(struct lemon* lemp, int stateno, char * desired_name) {
 	struct LxState* state = find_state(lemp, stateno);
-	if (state == NULL) {
-		if (lemp->lxdebuglevel >= 2) printf("state %d not found, ", stateno);
-	} else {
+	if (state == NULL) printf("state %d not found, ", stateno);
+	else {
 		assert((state->code == 0) || (state->is_leaf != 0));
 		int states = get_tran_num(state);
 		if (states > 0) {
@@ -1836,7 +1737,7 @@ int find_action(struct lemon* lemp, int stateno, char * desired_name) {
 				} else {
 					int needs_free = false;
 					if((tx->ch0 == 0) && (tx->ch1 == 0)){
-						if (lemp->lxdebuglevel >= 2) printf("/*loop --> %d*/\n", tx->next_state->state_id);
+// 						printf("/*loop --> %d*/\n", tx->next_state->state_id);
 					}else{
 						char * name = get_name(state, tx, &needs_free);
 						if (name != NULL) {
@@ -1847,7 +1748,7 @@ int find_action(struct lemon* lemp, int stateno, char * desired_name) {
 									int act = find_action(lemp, gt, desired_name);
 									if (act != -1) return act;
 								}
-								else if (lemp->lxdebuglevel >= 2) printf("no goto for state %d, ", stateno);
+								else printf("no goto for state %d, ", stateno);
 							}
 						}
 					}
@@ -1857,7 +1758,7 @@ int find_action(struct lemon* lemp, int stateno, char * desired_name) {
 		else if(state->code != 0){
 			return state->state_id;
 		}
-		else if (lemp->lxdebuglevel >= 2) printf("no states for state %d, ", stateno);
+		else printf("no states for state %d, ", stateno);
 	}
 	return -1;
 }
@@ -1906,14 +1807,6 @@ void trace(struct lemon* lemp, int stateno) {
 									trace(lemp, m);
 								}
 								else printf("no mode pointer found, ");
-								int n = find_nested_goto(lemp, gt, NEST_LEAVE, false, name);
-								nest_have = 0;
-								if (n != -1) {
-									printf("nest leave found: %d, ", n);
-									printf("tracing from %d to %d\n", stateno, n);
-									trace(lemp, n);
-								}
-								else printf("no nest leave found, ");
 								printf("tracing from %d to %d\n", stateno, gt);
 								trace(lemp, gt);
 							}
@@ -2206,11 +2099,11 @@ static void lx_generate_output_bt(struct lemon* lemp, FILE* out, int *lineno){
 		assert((curr_state->code == 0) || (curr_state->is_leaf != 0));
 // 	LX_PRINT_STATE_bt(out, curr_state);
 		for(struct LxTransition* tx = curr_state->head_transition; tx != 0; tx = tx->next_transition){
-			fprintf(out, nspS);
-			if (curr_state->dot_transition) txd(out, curr_state->dot_transition->tx_type);
-			else fprintf(out, "%-*s", nsp, "none");
-			txd(out, tx->tx_type);
-			fprintf(out, nspE);
+		fprintf(out, nspS);
+		if (curr_state->dot_transition) txd(out, curr_state->dot_transition->tx_type);
+		else fprintf(out, "%-*s", nsp, "none");
+		txd(out, tx->tx_type);
+		fprintf(out, nspE);
 			if((tx->ch0 == 0) && (tx->ch1 == 0)){
 				fprintf(out, "  /*loop --> %d*/\n", tx->next_state->state_id);(*lineno)++;
 			}else{
@@ -2261,6 +2154,7 @@ static void lx_generate_output(struct lemon* lemp, FILE* out, int *lineno){
 
 	int list_generated=0;
 	env_t state_env = env__new();
+	int action_state = 0;
 	for(struct LxState* curr_state = lemp->headstate; curr_state != 0; curr_state = curr_state->next_state){
 		fprintf(out, "S%d:\n", curr_state->state_id);(*lineno)++;
 		assert((curr_state->code == 0) || (curr_state->is_leaf != 0));
@@ -2274,13 +2168,11 @@ static void lx_generate_output(struct lemon* lemp, FILE* out, int *lineno){
 //       LX_PRINT_STATE(out, curr_state);
 		}
 		for(struct LxTransition* tx = curr_state->head_transition; tx != 0; tx = tx->next_transition){
-		if (lemp->lxdebuglevel >= 2) {
-				fprintf(out, nspS);
-				if (curr_state->dot_transition) txd(out, curr_state->dot_transition->tx_type);
-				else fprintf(out, "%-*s", nsp, "none");
-				txd(out, tx->tx_type);
-				fprintf(out, nspE);
-		}
+		fprintf(out, nspS);
+		if (curr_state->dot_transition) txd(out, curr_state->dot_transition->tx_type);
+		else fprintf(out, "%-*s", nsp, "none");
+		txd(out, tx->tx_type);
+		fprintf(out, nspE);
 			LX_PRINT_TRANSITION(out, curr_state, tx);
 			if((tx->ch0 == 0) && (tx->ch1 == 0)){
 				fprintf(out, "  /*loop --> %d*/\n", tx->next_state->state_id);(*lineno)++;
@@ -2294,31 +2186,32 @@ static void lx_generate_output(struct lemon* lemp, FILE* out, int *lineno){
 					if(curr_state->is_leaf == 1){
 						if((curr_state->not_transition != 0) && (curr_state->not_transition != tx)){
 							if(tx->tx_type == INIT_TX){
-								lx_generate_send(lemp, out, curr_state, tx->variable_name);
+								lx_generate_send(lemp, out, curr_state);
 							}
 						}else if((curr_state->dot_transition != 0) && (curr_state->dot_transition != tx)){
 							if(tx->tx_type == INIT_TX){
-								lx_generate_send(lemp, out, curr_state, tx->variable_name);
+								lx_generate_send(lemp, out, curr_state);
 							}
 						}
 					}
-					if (!tx->is_variable) {
-						if(tx->is_capturing == 1){
-							fprintf(out, "LX_CAPTURE(curr_pos, curr_len);");
-						}
-					}
-#define GENOUT char * envname = env__get_name(ep, *ep); int envnum = atoi(env__get(ep, *ep)); if (lemp->lxdebuglevel >= 2) { puts(""); pi(curr_state->state_id); if(tx->is_variable) ps(tx->variable_name); } if (states_ne != NULL) { memset(states_ne, 0, state_count(lemp)*sizeof(int));} int n = find_nested_goto(lemp, curr_state->state_id, NEST_ENTER, false, envname); nest_have = 0; memset(states_ne, 0, state_count(lemp)*sizeof(int)); if (lemp->lxdebuglevel >= 2) pi(n); int nn = find_nested_goto(lemp, curr_state->state_id, NEST_LEAVE, tx->is_variable, envname); nest_have = 0; memset(states_nl, 0, state_count(lemp)*sizeof(int)); if (lemp->lxdebuglevel >= 2) pi(nn); int nnn = find_action(lemp, envnum, envname); int nnnn = find_mode(lemp, curr_state->state_id, envname); memset(states_mode, 0, state_count(lemp)*sizeof(int)); int stateval = 0; if (n != -1 && nnnn != -1) stateval = n; else stateval = nnn; fprintf(out, "%sif (LX_LOOKAHEAD(%s) == -1) { LX_RESET; LX_CAPTURE(curr_pos, strlen(%s)); LX_LOOKAHEAD_ADVANCE(%s, %d); goto S%d /*nest enter goto %d, nest exit goto %d, action goto %d, find mode %d, goto %d*/;", loop==1?" else ":"", envname, envname, envname, stateval, stateval, n, nn, nnn, nnnn, get_goto(tx)); fprintf(out, "}%s", loop==1?" ":""); loop = 1;
+// 					if(tx->is_capturing == 1){
+// 						fprintf(out, "LX_CAPTURE(curr_pos, curr_len);");
+// 					}
+#define GENOUT char * envname = env__get_name(ep, *ep); int envnum = atoi(env__get(ep, *ep)); /*if(curr_state->state_id != 1 && curr_state->dot_transition && (tx->tx_type == REGULAR_TX || tx->tx_type == INIT_TX))*/ fprintf(out, "%sif (LX_LOOKAHEAD(%s) == -1) { LX_CAPTURE(curr_pos, strlen(%s)); LX_ACTION(%d); LX_LOOKAHEAD_ADVANCE(%s, %d); LX_RESET; }%s", loop==1?" else ":"", envname, envname, find_action(lemp, envnum, envname), envname, 1, loop==1?" ":""); loop = 1;
 			if (curr_state->state_id == 1 && list_generated == 0) {
 				for(struct LxState* curr_state2 = lemp->headstate; curr_state2 != 0; curr_state2 = curr_state2->next_state){
 					for(struct LxTransition* tx2 = curr_state2->head_transition; tx2 != 0; tx2 = tx2->next_transition){
-						if (tx2->is_variable) {
+						if((tx2->ch0 == 0) && (tx2->ch1 == 0)) action_state = tx2->next_state->state_id;
+						if (tx->is_variable) {
 							if (tx2->variable_name != NULL) {
 								str_new(sint);
 								str_insert_string(sint, tx2->variable_name);
 								str_insert_string(sint, "=");
 								str_insert_int(sint, curr_state2->state_id);
-								state_env = env__add(state_env, sint.string);
-								state_env = env__clean(state_env);
+								if (tx2->is_variable) {
+									state_env = env__add(state_env, sint.string);
+									state_env = env__clean(state_env);
+								}
 								str_free(sint);
 							}
 						}
@@ -2350,15 +2243,7 @@ static void lx_generate_output(struct lemon* lemp, FILE* out, int *lineno){
 					}
 				}
 			}
-					if (loop == 1) {
-						fprintf(out, "else { LX_CAPTURE(curr_pos, 1);");
-					}
-					fprintf(out, "LX_ADVANCE(%d);", tx->next_state->state_id);
-					fprintf(out, "goto S%d; /*1*/", tx->next_state->state_id);
-					if (loop == 1) {
-						fprintf(out, "}");
-					}
-// 					if (!tx->is_variable) fprintf(out, "%sLX_ADVANCE(%d);goto S%d; /*1*/%s", loop==1?"else {":"", tx->next_state->state_id, tx->next_state->state_id, loop==1?"}":"");
+					fprintf(out, "%sLX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(%d);goto S%d; /*1*/%s", loop==1?"else {":"", tx->next_state->state_id, tx->next_state->state_id, loop==1?"}":"");
 				}
 				fprintf(out, "}");
 				fprintf(out, "\n");(*lineno)++;

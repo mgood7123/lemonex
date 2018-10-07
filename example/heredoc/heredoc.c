@@ -67,7 +67,7 @@ struct lxToken{
 };
 #endif /* LEMONEX */
 #define YYCODETYPE unsigned char
-#define YYNOCODE 9
+#define YYNOCODE 4
 #define YYACTIONTYPE unsigned char
 #if INTERFACE
 #ifdef LEMONEX
@@ -78,8 +78,8 @@ struct lxToken{
 #endif /* LEMONEX */
 #endif
 typedef union {
-  int yyinit;
-  ParseTOKENTYPE yy0;
+	int yyinit;
+	ParseTOKENTYPE yy0;
 } YYMINORTYPE;
 #ifndef YYSTACKDEPTH
 #define YYSTACKDEPTH 100
@@ -94,30 +94,10 @@ typedef union {
 #endif
 #define ParseARG_SDECL
 #endif
-/* declare function definitions here, this will be blank if there are no definitions */
-int ParseReadString(
-  char *buf
-  ,const char *filename
-  ,const char* dbgpfx
-  ParseARG_PDECL               /* Optional %extra_argument parameter */
-);
-/* First off, code is included that follows the "include" declaration
-** in the input grammar file. */
-#define LEMONEX_DBGLVL 0
-#include "math.h"
-/* Next is all token values, in a form suitable for use by makeheaders.
-** This section will be null unless lemon is run with the -m switch.
-*/
-/* 
-** These constants (all generated automatically by the parser generator)
-** specify the various kinds of tokens (terminals) that the parser
-** understands. 
-**
-** Each symbol here is a terminal symbol in the grammar.
-*/
 #ifdef LEMONEX
 #define ParseLX_INTEGRATEDMODE 1
 #define ParseLX_NESTINGDEPTH 32
+#endif
 #if LEMONEX
 #ifdef ParseLX_NESTINGDEPTH
 struct lxNestingFrame {
@@ -140,7 +120,41 @@ struct lxLexer {
 #endif
 };
 typedef struct lxLexer lxLexer;
+#ifdef ParseLX_NESTINGDEPTH
+#define LX_NESTLEVEL (lxpLexer->nestinglevel-(lxpLexer->nestinglevel==0?0:lxpLexer->nestinglevel)) + lxpLexer->nestingstack[(lxpLexer->nestinglevel==0?1:lxpLexer->nestinglevel)-1].count
+#define LX_NESTMAX ParseLX_NESTINGDEPTH
+#else
+#define LX_NESTLEVEL 0
+#define LX_NESTMAX 0
+#endif
 
+/* declare function definitions here, this will be blank if there are no definitions */
+int ParseReadString(
+  char *buf
+  ,const char *filename
+  ,const char* dbgpfx
+  ParseARG_PDECL               /* Optional %extra_argument parameter */
+);
+/* First off, code is included that follows the "include" declaration
+** in the input grammar file. */
+#line 2 "example/heredoc.y"
+
+	char * CAT[LX_NESTMAX] = {0};
+// 	char * AAA = "AAA";
+#line 144 "./example/heredoc/heredoc.c"
+#define LEMONEX_DBGLVL 3
+#include "heredoc.h"
+/* Next is all token values, in a form suitable for use by makeheaders.
+** This section will be null unless lemon is run with the -m switch.
+*/
+/* 
+** These constants (all generated automatically by the parser generator)
+** specify the various kinds of tokens (terminals) that the parser
+** understands. 
+**
+** Each symbol here is a terminal symbol in the grammar.
+*/
+#ifdef LEMONEX
 #ifdef ParseLX_NESTINGDEPTH
 static int lx_enternesting(
   lxLexer *lxpLexer,           /* The lexer */
@@ -181,6 +195,10 @@ static int lx_leavenesting(
 		printf("NEST:cannot leave empty nest\n");
 		printf("NEST:leave-level:%d\n", lxpLexer->nestinglevel);
 		return -1;
+	}
+	if (lxpLexer->nestingstack[lxpLexer->nestinglevel-1].count != 0) {
+		lxpLexer->nestingstack[lxpLexer->nestinglevel-1].count--;
+		return 0;
 	}
 #if LEMONEX_DBGLVL>=2
   printf("NEST:leave-level:%d\n", lxpLexer->nestinglevel);
@@ -948,16 +966,16 @@ static int lxcls_e[] = {
   0x964   ,0x965   ,  0,0
 };
 #endif
-#define YYNSTATE             1
-#define YYNRULE              1
-#define YY_MAX_SHIFT         0
-#define YY_MIN_SHIFTREDUCE   1
-#define YY_MAX_SHIFTREDUCE   1
-#define YY_MIN_REDUCE        2
-#define YY_MAX_REDUCE        2
-#define YY_ERROR_ACTION      3
-#define YY_ACCEPT_ACTION     4
-#define YY_NO_ACTION         5
+#define YYNSTATE						 1
+#define YYNRULE							1
+#define YY_MAX_SHIFT				 0
+#define YY_MIN_SHIFTREDUCE	 1
+#define YY_MAX_SHIFTREDUCE	 1
+#define YY_MIN_REDUCE				2
+#define YY_MAX_REDUCE				2
+#define YY_ERROR_ACTION			3
+#define YY_ACCEPT_ACTION		 4
+#define YY_NO_ACTION				 5
 
 /* returns 1 if ch is in cls */
 static int lx_isclass(int ch, int* clsl){
@@ -1135,21 +1153,21 @@ static const YYACTIONTYPE yy_action[] = {
  /*     0 */     2,    4,
 };
 static const YYCODETYPE yy_lookahead[] = {
- /*     0 */     0,    7,
+ /*     0 */     0,    2,
 };
 #define YY_SHIFT_USE_DFLT (-1)
 #define YY_SHIFT_COUNT (0)
-#define YY_SHIFT_MIN   (0)
-#define YY_SHIFT_MAX   (0)
+#define YY_SHIFT_MIN	 (0)
+#define YY_SHIFT_MAX	 (0)
 static const signed char yy_shift_ofst[] = {
  /*     0 */     0,
 };
-#define YY_REDUCE_USE_DFLT (-7)
+#define YY_REDUCE_USE_DFLT (-2)
 #define YY_REDUCE_COUNT (0)
-#define YY_REDUCE_MIN   (-6)
-#define YY_REDUCE_MAX   (0)
+#define YY_REDUCE_MIN	 (-1)
+#define YY_REDUCE_MAX	 (0)
 static const signed char yy_reduce_ofst[] = {
- /*     0 */    -6,
+ /*     0 */    -1,
 };
 static const YYACTIONTYPE yy_default[] = {
  /*     0 */     3,
@@ -1254,8 +1272,7 @@ void ParseTrace(FILE *TraceFILE, char *zTracePrompt){
 /* For tracing shifts, the names of all terminals and nonterminals
 ** are required.  The following table supplies these names */
 static const char *const yyTokenName[] = { 
-  "$",             "DIVIDE",        "TIMES",         "MINUS",       
-  "PLUS",          "INTEGER",       "error",         "rModule",     
+	"$",           	"error",       	"rModule",     
 };
 #endif /* NDEBUG */
 
@@ -1347,16 +1364,6 @@ static void yy_destructor(
     ** which appear on the RHS of the rule, but which are not used
     ** inside the C code.
     */
-      /* TERMINAL Destructor */
-    case 1: /* DIVIDE */
-    case 2: /* TIMES */
-    case 3: /* MINUS */
-    case 4: /* PLUS */
-    case 5: /* INTEGER */
-#ifdef LEMONEX
-      LX_FREETOK;
-#endif /*LEMONEX*/
-      break;
     default:  break;   /* If no destructor action specified: do nothing */
   }
 }
@@ -1610,7 +1617,7 @@ static const struct {
   YYCODETYPE lhs;         /* Symbol on the left-hand side of the rule */
   unsigned char nrhs;     /* Number of right-hand side symbols in the rule */
 } yyRuleInfo[] = {
-  { 7, 0 },
+	{ 2, 0 },
 };
 
 static void yy_accept(yyParser*);  /* Forward Declaration */
@@ -1666,9 +1673,9 @@ static void yy_reduce(
   **  #line <lineno> <thisfile>
   **     break;
   */
-      default:
-      /* (0) rModule ::= */ yytestcase(yyruleno==0);
-        break;
+			default:
+			/* (0) rModule ::= */ yytestcase(yyruleno==0);
+				break;
   };
   yygoto = yyRuleInfo[yyruleno].lhs;
   yysize = yyRuleInfo[yyruleno].nrhs;
@@ -1726,10 +1733,6 @@ static void yy_syntax_error(
 ){
   ParseARG_FETCH;
 #define TOKEN (yyminor.yy0)
-#line 12 "example/math.y"
-
-  puts("Syntax error!");
-#line 2958 "./example/math/math.c"
   ParseARG_STORE; /* Suppress warning about unused %extra_argument variable */
 }
 
@@ -1930,14 +1933,41 @@ void Parse(
 /* The lexer code */
 
 /* The regex actions */
-static void lx_state_action_2(lxLexer *lxpLexer){ printf("Recieved WORD %s\n", (lxpLexer->token).buf); }
-static void lx_state_action_4(lxLexer *lxpLexer){ printf("Recieved EOF %s\n", (lxpLexer->token).buf); }
-static void lx_state_action_5(lxLexer *lxpLexer){ printf("Recieved NUMBER %s\n", (lxpLexer->token).buf); }
-static void lx_state_action_6(lxLexer *lxpLexer){ printf("Recieved PLUS %s\n", (lxpLexer->token).buf); }
-static void lx_state_action_7(lxLexer *lxpLexer){ printf("Recieved EOL %s\n", (lxpLexer->token).buf); }
-static void lx_state_action_8(lxLexer *lxpLexer){ printf("Recieved EOF %s\n", (lxpLexer->token).buf); }
-static void lx_state_action_9(lxLexer *lxpLexer){ printf("Recieved EOF %s\n", (lxpLexer->token).buf); }
-static void lx_state_action_10(lxLexer *lxpLexer){ printf("Recieved EOF %s\n", (lxpLexer->token).buf); }
+static void lx_state_action_1(lxLexer *lxpLexer){ printf("OTHER: \"%s\"\n", (lxpLexer->token).buf); }
+static void lx_state_action_7(lxLexer *lxpLexer){											//			<--------------------- NESTING ENTER
+	CAT[LX_NESTLEVEL] = (lxpLexer->token).buf;
+	int len = strlen(CAT[LX_NESTLEVEL]);
+	if (CAT[LX_NESTLEVEL][len-1] == ' ' || CAT[LX_NESTLEVEL][len-1] == '\n') {
+		CAT[LX_NESTLEVEL][len-1] = 0;
+	}
+	printf("S: \"%s\"\n", CAT[LX_NESTLEVEL]);
+	CAT[LX_NESTLEVEL] += 2;
+}
+static void lx_state_action_8(lxLexer *lxpLexer){ printf("OTHER: \"%s\"\n", (lxpLexer->token).buf); }
+static void lx_state_action_11(lxLexer *lxpLexer){
+	printf("CAT[LX_NESTLEVEL-1]_%s: %s\n", "CONTENTS", (lxpLexer->token).buf);
+// 	puts("parsing...");
+// 	if(LX_REPARSE((lxpLexer->token).buf) != 0) {
+// 		printf("Error\n");
+// 	} else printf("Success\n");
+}
+static void lx_state_action_17(lxLexer *lxpLexer){											//			<--------------------- NESTING ENTER
+	CAT[LX_NESTLEVEL+1] = (lxpLexer->token).buf;
+	int len = strlen(CAT[LX_NESTLEVEL+1]);
+	if (CAT[LX_NESTLEVEL+1][len-1] == ' ' || CAT[LX_NESTLEVEL+1][len-1] == '\n') {
+		CAT[LX_NESTLEVEL+1][len-1] = 0;
+	}
+	printf("S: \"%s\"\n", CAT[LX_NESTLEVEL+1]);
+	CAT[LX_NESTLEVEL+1] += 2;
+}
+static void lx_state_action_34(lxLexer *lxpLexer){ printf("E: %s\n", (lxpLexer->token).buf); }
+static void lx_state_action_35(lxLexer *lxpLexer){
+	printf("CAT[LX_NESTLEVEL-1]_%s: %s\n", "CONTENTS", (lxpLexer->token).buf);
+// 	puts("parsing...");
+// 	if(LX_REPARSE((lxpLexer->token).buf) != 0) {
+// 		printf("Error\n");
+// 	} else printf("Success\n");
+}
 #define LX_ACTION(s) lx_state_action_##s(lxpLexer)
 
 /* The main lexer */
@@ -1964,6 +1994,7 @@ int ParseRead(
 
   LX_ADVANCE(lxpLexer->lxstate);
 L0:
+  printf("L0:%d\n", lxpLexer->lxstate);
   switch(lxpLexer->lxstate) {
     case 1:goto S1;
     case 2:goto S2;
@@ -1977,71 +2008,357 @@ L0:
     case 10:goto S10;
     case 11:goto S11;
     case 12:goto S12;
+    case 13:goto S13;
+    case 14:goto S14;
+    case 15:goto S15;
+    case 16:goto S16;
+    case 17:goto S17;
+    case 18:goto S18;
+    case 19:goto S19;
+    case 20:goto S20;
+    case 21:goto S21;
+    case 22:goto S22;
+    case 23:goto S23;
+    case 24:goto S24;
+    case 25:goto S25;
+    case 26:goto S26;
+    case 27:goto S27;
+    case 28:goto S28;
+    case 29:goto S29;
+    case 30:goto S30;
+    case 31:goto S31;
+    case 32:goto S32;
+    case 33:goto S33;
+    case 34:goto S34;
+    case 35:goto S35;
+    case 36:goto S36;
+    case 37:goto S37;
   }
 S1:
-  /*1[9( )-0( )]->9:tx_type:0, is_cap:1*/ if(ch == 9 /* decimal is required for full unicode support, printable character is '\t' */ ){LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(9);goto S9; /*1*/}
-  /*1[43(+)-0( )]->6:tx_type:0, is_cap:1*/ if(ch == 43 /* decimal is required for full unicode support, printable character is '+' */ ){LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(6);goto S6; /*1*/}
-  /*1[124(|)-0( )]->7:tx_type:0, is_cap:1*/ if(ch == 124 /* decimal is required for full unicode support, printable character is '|' */ ){LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(7);goto S7; /*1*/}
-  /*1[48(0)-57(9)]->5:tx_type:0, is_cap:1*/  if((ch >= 48) && (ch <= 57)){LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(5);goto S5; /*1*/}
-  /*1[0( )-1( )]->10:tx_type:0, is_cap:1*/  if(LX_ISLETTER(ch)==1){LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(10);goto S10; /*1*/}
-  /*1[0( )-2( )]->4:tx_type:0, is_cap:1*/  if(LX_ISDIGIT(ch)==1){LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(4);goto S4; /*1*/}
-  /*1[0( )-0( )]->2:tx_type:4, is_cap:0*/  /*loop --> 2*/
-  /*1[0( )-5( )]->8:tx_type:0, is_cap:0*/  if(ch != 0){LX_ADVANCE(8);goto S8; /*1*/}
-  lxpLexer->lxstate=1;return 0;
+  printf("current state: 1: (row %d, column %d): char hex:0x%X (%c)\n", lxpLexer->lxrow, lxpLexer->lxcol, ch, ((ch>= 32) && (ch <= 127))?ch:' ');
+
+/*
+REGULAR_TX  REGULAR_TX  
+*/    /*1[60(<)-0( )]->2:tx_type:0, is_cap:1*/ if(ch == 60 /* decimal is required for full unicode support, printable character is '<' */ ){LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(2);goto S2; /*1*/}
+
+/*
+REGULAR_TX  INIT_TX     
+*/    /*1[60(<)-0( )]->2:tx_type:2, is_cap:1*/ if(ch == 60 /* decimal is required for full unicode support, printable character is '<' */ ){  LX_ACTION(1);/*NO_SEND*/LX_RESET;LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(2);goto S2; /*1*/}
+
+/*
+REGULAR_TX  LOOP_TX     
+*/    /*1[0( )-0( )]->8:tx_type:4, is_cap:0*/  /*loop --> 8*/
+
+/*
+REGULAR_TX  REGULAR_TX  
+*/    /*1[0( )-5( )]->10:tx_type:0, is_cap:1*/  if(ch != 0){LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(10);goto S10; /*1*/}
+  if(is_final == 0) {lxpLexer->lxstate=1;return 0;}
+  LX_SEND(0);return 0;
   
 S2:
-  /*2[0( )-2( )]->3:tx_type:0, is_cap:1*/  if(LX_ISDIGIT(ch)==1){LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(3);goto S3; /*1*/}
-  if((ch == 0) && (is_final == 0)) {lxpLexer->lxstate=2;return 0;}
-  LX_ACTION(2);/*NO_SEND*/LX_RESET;
-  if(ch == 0) {LX_SEND(0);return 0;}
-  goto S1; /* by init_state */
+  printf("current state: 2: (row %d, column %d): char hex:0x%X (%c)\n", lxpLexer->lxrow, lxpLexer->lxcol, ch, ((ch>= 32) && (ch <= 127))?ch:' ');
+
+/*
+none        REGULAR_TX  
+*/    /*2[60(<)-0( )]->3:tx_type:0, is_cap:1*/ if(ch == 60 /* decimal is required for full unicode support, printable character is '<' */ ){LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(3);goto S3; /*1*/}
+  if(ch == 0){lxpLexer->lxstate=2;return 0;}
+  goto S8; /* by goto_state */
 S3:
-  goto S2; /* by goto_state */
+  printf("current state: 3: (row %d, column %d): char hex:0x%X (%c)\n", lxpLexer->lxrow, lxpLexer->lxcol, ch, ((ch>= 32) && (ch <= 127))?ch:' ');
+
+/*
+REGULAR_TX  LOOP_TX     
+*/    /*3[0( )-0( )]->4:tx_type:4, is_cap:0*/  /*loop --> 4*/
+
+/*
+REGULAR_TX  REGULAR_TX  
+*/    /*3[0( )-5( )]->6:tx_type:0, is_cap:1*/  if(ch != 0){LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(6);goto S6; /*1*/}
+  lxpLexer->lxstate=3;return 0;
+  
 S4:
-  if((ch == 0) && (is_final == 0)) {lxpLexer->lxstate=4;return 0;}
-  LX_ACTION(4);/*NO_SEND*/LX_RESET;
-  if(ch == 0) {LX_SEND(0);return 0;}
-  goto S1; /* by init_state */
+  printf("current state: 4: (row %d, column %d): char hex:0x%X (%c)\n", lxpLexer->lxrow, lxpLexer->lxcol, ch, ((ch>= 32) && (ch <= 127))?ch:' ');
+
+/*
+REGULAR_TX  REGULAR_TX  
+*/    /*4[10( )-0( )]->7:tx_type:0, is_cap:1*/ if(ch == 10 /* decimal is required for full unicode support, printable character is '\n' */ ){LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(7);goto S7; /*1*/}
+
+/*
+REGULAR_TX  REGULAR_TX  
+*/    /*4[32( )-0( )]->7:tx_type:0, is_cap:1*/ if(ch == 32 /* decimal is required for full unicode support, printable character is ' ' */ ){LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(7);goto S7; /*1*/}
+
+/*
+REGULAR_TX  REGULAR_TX  
+*/    /*4[0( )-5( )]->5:tx_type:0, is_cap:1*/  if(ch != 0){LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(5);goto S5; /*1*/}
+  lxpLexer->lxstate=4;return 0;
+  
 S5:
-  if((ch == 0) && (is_final == 0)) {lxpLexer->lxstate=5;return 0;}
-  LX_ACTION(5);/*NO_SEND*/LX_RESET;
-  if(ch == 0) {LX_SEND(0);return 0;}
-  goto S1; /* by init_state */
+  printf("current state: 5: (row %d, column %d): char hex:0x%X (%c)\n", lxpLexer->lxrow, lxpLexer->lxcol, ch, ((ch>= 32) && (ch <= 127))?ch:' ');
+  goto S4; /* by goto_state */
 S6:
-  if((ch == 0) && (is_final == 0)) {lxpLexer->lxstate=6;return 0;}
-  LX_ACTION(6);/*NO_SEND*/LX_RESET;
-  if(ch == 0) {LX_SEND(0);return 0;}
-  goto S1; /* by init_state */
+  printf("current state: 6: (row %d, column %d): char hex:0x%X (%c)\n", lxpLexer->lxrow, lxpLexer->lxcol, ch, ((ch>= 32) && (ch <= 127))?ch:' ');
+  goto S5; /* by goto_state */
 S7:
+  printf("current state: 7: (row %d, column %d): char hex:0x%X (%c)\n", lxpLexer->lxrow, lxpLexer->lxcol, ch, ((ch>= 32) && (ch <= 127))?ch:' ');
   if((ch == 0) && (is_final == 0)) {lxpLexer->lxstate=7;return 0;}
   LX_ACTION(7);/*NO_SEND*/LX_RESET;
   if(ch == 0) {LX_SEND(0);return 0;}
-  goto S1; /* by init_state */
+  LX_ENTER_NESTING(1);
+  goto S11; /* by retn_state */
 S8:
-  if((ch == 0) && (is_final == 0)) {lxpLexer->lxstate=8;return 0;}
-  LX_ACTION(8);/*NO_SEND*/LX_RESET;
-  if(ch == 0) {LX_SEND(0);return 0;}
-  goto S1; /* by init_state */
+  printf("current state: 8: (row %d, column %d): char hex:0x%X (%c)\n", lxpLexer->lxrow, lxpLexer->lxcol, ch, ((ch>= 32) && (ch <= 127))?ch:' ');
+
+/*
+REGULAR_TX  INIT_TX     
+*/    /*8[60(<)-0( )]->2:tx_type:2, is_cap:1*/ if(ch == 60 /* decimal is required for full unicode support, printable character is '<' */ ){  LX_ACTION(8);/*NO_SEND*/LX_RESET;LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(2);goto S2; /*1*/}
+
+/*
+REGULAR_TX  REGULAR_TX  
+*/    /*8[0( )-5( )]->9:tx_type:0, is_cap:1*/  if(ch != 0){LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(9);goto S9; /*1*/}
+  if(is_final == 0) {lxpLexer->lxstate=8;return 0;}
+  LX_SEND(0);return 0;
+  
 S9:
-  if((ch == 0) && (is_final == 0)) {lxpLexer->lxstate=9;return 0;}
-  LX_ACTION(9);/*NO_SEND*/LX_RESET;
-  if(ch == 0) {LX_SEND(0);return 0;}
-  goto S1; /* by init_state */
+  printf("current state: 9: (row %d, column %d): char hex:0x%X (%c)\n", lxpLexer->lxrow, lxpLexer->lxcol, ch, ((ch>= 32) && (ch <= 127))?ch:' ');
+  goto S8; /* by goto_state */
 S10:
-  if((ch == 0) && (is_final == 0)) {lxpLexer->lxstate=10;return 0;}
-  LX_ACTION(10);/*NO_SEND*/LX_RESET;
-  if(ch == 0) {LX_SEND(0);return 0;}
-  goto S1; /* by init_state */
+  printf("current state: 10: (row %d, column %d): char hex:0x%X (%c)\n", lxpLexer->lxrow, lxpLexer->lxcol, ch, ((ch>= 32) && (ch <= 127))?ch:' ');
+  goto S9; /* by goto_state */
 S11:
-  /*11[65(A)-0( )]->12:tx_type:0, is_cap:1*/ if(ch == 65 /* decimal is required for full unicode support, printable character is 'A' */ ){LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(12);goto S12; /*1*/}
-  if(ch == 0){lxpLexer->lxstate=11;return 0;}
-  printf("(%d,%d):Error in state 11 on %u(%c)###########\n", lxpLexer->lxrow, lxpLexer->lxcol, ch, ch);
-  LX_SENDERR(6);return -1;
+  printf("current state: 11: (row %d, column %d): char hex:0x%X (%c)\n", lxpLexer->lxrow, lxpLexer->lxcol, ch, ((ch>= 32) && (ch <= 127))?ch:' ');
+
+/*
+REGULAR_TX  REGULAR_TX  
+*/    /*11[60(<)-0( )]->12:tx_type:0, is_cap:1*/ if(ch == 60 /* decimal is required for full unicode support, printable character is '<' */ ){LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(12);goto S12; /*1*/}
+
+/*
+REGULAR_TX  REGULAR_TX  
+*/    /*11[67(C)-0( )]->18:tx_type:0, is_cap:1*/ if(ch == CAT[LX_NESTLEVEL][0]){if (LX_LOOKAHEAD(CAT[LX_NESTLEVEL]) == -1) { LX_RESET; LX_CAPTURE(curr_pos, strlen(CAT[LX_NESTLEVEL])); LX_LOOKAHEAD_ADVANCE(CAT[LX_NESTLEVEL], 34); goto S34 /*nest enter goto 34, nest exit goto -1, action goto 34, find mode 11, goto 18*/;}else { LX_CAPTURE(curr_pos, 1);LX_ADVANCE(18);goto S18; /*1*/}}
+
+/*
+REGULAR_TX  INIT_TX     
+*/    /*11[60(<)-0( )]->12:tx_type:2, is_cap:1*/ if(ch == 60 /* decimal is required for full unicode support, printable character is '<' */ ){  LX_ACTION(11);/*NO_SEND*/LX_RESET;LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(12);goto S12; /*1*/}
+
+/*
+REGULAR_TX  INIT_TX     
+*/    /*11[67(C)-0( )]->18:tx_type:2, is_cap:1*/ if(ch == CAT[LX_NESTLEVEL][0]){  LX_ACTION(11);/*NO_SEND*/if (LX_LOOKAHEAD(CAT[LX_NESTLEVEL]) == -1) { LX_RESET; LX_CAPTURE(curr_pos, strlen(CAT[LX_NESTLEVEL])); LX_LOOKAHEAD_ADVANCE(CAT[LX_NESTLEVEL], 34); goto S34 /*nest enter goto 34, nest exit goto -1, action goto 34, find mode 11, goto 18*/;}else { LX_CAPTURE(curr_pos, 1);LX_ADVANCE(18);goto S18; /*1*/}}
+
+/*
+REGULAR_TX  LOOP_TX     
+*/    /*11[0( )-0( )]->35:tx_type:4, is_cap:0*/  /*loop --> 35*/
+
+/*
+REGULAR_TX  REGULAR_TX  
+*/    /*11[0( )-5( )]->37:tx_type:0, is_cap:1*/  if(ch != 0){LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(37);goto S37; /*1*/}
+  if(is_final == 0) {lxpLexer->lxstate=11;return 0;}
+  LX_SEND(0);return 0;
+  
 S12:
-  if((ch == 0) && (is_final == 0)) {lxpLexer->lxstate=12;return 0;}
-  /*NO_SEND*/LX_RESET;
+  printf("current state: 12: (row %d, column %d): char hex:0x%X (%c)\n", lxpLexer->lxrow, lxpLexer->lxcol, ch, ((ch>= 32) && (ch <= 127))?ch:' ');
+
+/*
+none        REGULAR_TX  
+*/    /*12[60(<)-0( )]->13:tx_type:0, is_cap:1*/ if(ch == 60 /* decimal is required for full unicode support, printable character is '<' */ ){LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(13);goto S13; /*1*/}
+  if(ch == 0){lxpLexer->lxstate=12;return 0;}
+  goto S35; /* by goto_state */
+S13:
+  printf("current state: 13: (row %d, column %d): char hex:0x%X (%c)\n", lxpLexer->lxrow, lxpLexer->lxcol, ch, ((ch>= 32) && (ch <= 127))?ch:' ');
+
+/*
+REGULAR_TX  LOOP_TX     
+*/    /*13[0( )-0( )]->14:tx_type:4, is_cap:0*/  /*loop --> 14*/
+
+/*
+REGULAR_TX  REGULAR_TX  
+*/    /*13[0( )-5( )]->16:tx_type:0, is_cap:1*/  if(ch != 0){LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(16);goto S16; /*1*/}
+  lxpLexer->lxstate=13;return 0;
+  
+S14:
+  printf("current state: 14: (row %d, column %d): char hex:0x%X (%c)\n", lxpLexer->lxrow, lxpLexer->lxcol, ch, ((ch>= 32) && (ch <= 127))?ch:' ');
+
+/*
+REGULAR_TX  REGULAR_TX  
+*/    /*14[10( )-0( )]->17:tx_type:0, is_cap:1*/ if(ch == 10 /* decimal is required for full unicode support, printable character is '\n' */ ){LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(17);goto S17; /*1*/}
+
+/*
+REGULAR_TX  REGULAR_TX  
+*/    /*14[32( )-0( )]->17:tx_type:0, is_cap:1*/ if(ch == 32 /* decimal is required for full unicode support, printable character is ' ' */ ){LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(17);goto S17; /*1*/}
+
+/*
+REGULAR_TX  REGULAR_TX  
+*/    /*14[0( )-5( )]->15:tx_type:0, is_cap:1*/  if(ch != 0){LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(15);goto S15; /*1*/}
+  lxpLexer->lxstate=14;return 0;
+  
+S15:
+  printf("current state: 15: (row %d, column %d): char hex:0x%X (%c)\n", lxpLexer->lxrow, lxpLexer->lxcol, ch, ((ch>= 32) && (ch <= 127))?ch:' ');
+  goto S14; /* by goto_state */
+S16:
+  printf("current state: 16: (row %d, column %d): char hex:0x%X (%c)\n", lxpLexer->lxrow, lxpLexer->lxcol, ch, ((ch>= 32) && (ch <= 127))?ch:' ');
+  goto S15; /* by goto_state */
+S17:
+  printf("current state: 17: (row %d, column %d): char hex:0x%X (%c)\n", lxpLexer->lxrow, lxpLexer->lxcol, ch, ((ch>= 32) && (ch <= 127))?ch:' ');
+  if((ch == 0) && (is_final == 0)) {lxpLexer->lxstate=17;return 0;}
+  LX_ACTION(17);/*NO_SEND*/LX_RESET;
   if(ch == 0) {LX_SEND(0);return 0;}
-  goto S11; /* by init_state */
+  LX_RENEW_NESTING;
+  goto S11; /* by retn_state */
+S18:
+  printf("current state: 18: (row %d, column %d): char hex:0x%X (%c)\n", lxpLexer->lxrow, lxpLexer->lxcol, ch, ((ch>= 32) && (ch <= 127))?ch:' ');
+
+/*
+none        REGULAR_TX  
+*/    /*18[65(A)-0( )]->19:tx_type:0, is_cap:1*/// if(ch == CAT[LX_NESTLEVEL][1]){if (LX_LOOKAHEAD(CAT[LX_NESTLEVEL]) == -1) { LX_RESET; LX_CAPTURE(curr_pos, strlen(CAT[LX_NESTLEVEL])); LX_LOOKAHEAD_ADVANCE(CAT[LX_NESTLEVEL], 34); goto S34 /*nest enter goto 34, nest exit goto -1, action goto 34, find mode 18, goto 19*/;}else { LX_CAPTURE(curr_pos, 1);LX_ADVANCE(19);goto S19; /*1*/}}
+  if(ch == 0){lxpLexer->lxstate=18;return 0;}
+  goto S35; /* by goto_state */
+S19:
+  printf("current state: 19: (row %d, column %d): char hex:0x%X (%c)\n", lxpLexer->lxrow, lxpLexer->lxcol, ch, ((ch>= 32) && (ch <= 127))?ch:' ');
+
+/*
+none        REGULAR_TX  
+*/    /*19[84(T)-0( )]->20:tx_type:0, is_cap:1*/// if(ch == CAT[LX_NESTLEVEL][2]){if (LX_LOOKAHEAD(CAT[LX_NESTLEVEL]) == -1) { LX_RESET; LX_CAPTURE(curr_pos, strlen(CAT[LX_NESTLEVEL])); LX_LOOKAHEAD_ADVANCE(CAT[LX_NESTLEVEL], 34); goto S34 /*nest enter goto 34, nest exit goto -1, action goto 34, find mode 19, goto 20*/;}else { LX_CAPTURE(curr_pos, 1);LX_ADVANCE(20);goto S20; /*1*/}}
+  if(ch == 0){lxpLexer->lxstate=19;return 0;}
+  goto S35; /* by goto_state */
+S20:
+  printf("current state: 20: (row %d, column %d): char hex:0x%X (%c)\n", lxpLexer->lxrow, lxpLexer->lxcol, ch, ((ch>= 32) && (ch <= 127))?ch:' ');
+
+/*
+none        REGULAR_TX  
+*/    /*20[91([)-0( )]->21:tx_type:0, is_cap:1*/// if(ch == CAT[LX_NESTLEVEL][3]){if (LX_LOOKAHEAD(CAT[LX_NESTLEVEL]) == -1) { LX_RESET; LX_CAPTURE(curr_pos, strlen(CAT[LX_NESTLEVEL])); LX_LOOKAHEAD_ADVANCE(CAT[LX_NESTLEVEL], 34); goto S34 /*nest enter goto 34, nest exit goto -1, action goto 34, find mode 20, goto 21*/;}else { LX_CAPTURE(curr_pos, 1);LX_ADVANCE(21);goto S21; /*1*/}}
+  if(ch == 0){lxpLexer->lxstate=20;return 0;}
+  goto S35; /* by goto_state */
+S21:
+  printf("current state: 21: (row %d, column %d): char hex:0x%X (%c)\n", lxpLexer->lxrow, lxpLexer->lxcol, ch, ((ch>= 32) && (ch <= 127))?ch:' ');
+
+/*
+none        REGULAR_TX  
+*/    /*21[76(L)-0( )]->22:tx_type:0, is_cap:1*/// if(ch == CAT[LX_NESTLEVEL][4]){if (LX_LOOKAHEAD(CAT[LX_NESTLEVEL]) == -1) { LX_RESET; LX_CAPTURE(curr_pos, strlen(CAT[LX_NESTLEVEL])); LX_LOOKAHEAD_ADVANCE(CAT[LX_NESTLEVEL], 34); goto S34 /*nest enter goto 34, nest exit goto -1, action goto 34, find mode 21, goto 22*/;}else { LX_CAPTURE(curr_pos, 1);LX_ADVANCE(22);goto S22; /*1*/}}
+  if(ch == 0){lxpLexer->lxstate=21;return 0;}
+  goto S35; /* by goto_state */
+S22:
+  printf("current state: 22: (row %d, column %d): char hex:0x%X (%c)\n", lxpLexer->lxrow, lxpLexer->lxcol, ch, ((ch>= 32) && (ch <= 127))?ch:' ');
+
+/*
+none        REGULAR_TX  
+*/    /*22[88(X)-0( )]->23:tx_type:0, is_cap:1*/// if(ch == CAT[LX_NESTLEVEL][5]){if (LX_LOOKAHEAD(CAT[LX_NESTLEVEL]) == -1) { LX_RESET; LX_CAPTURE(curr_pos, strlen(CAT[LX_NESTLEVEL])); LX_LOOKAHEAD_ADVANCE(CAT[LX_NESTLEVEL], 34); goto S34 /*nest enter goto 34, nest exit goto -1, action goto 34, find mode 22, goto 23*/;}else { LX_CAPTURE(curr_pos, 1);LX_ADVANCE(23);goto S23; /*1*/}}
+  if(ch == 0){lxpLexer->lxstate=22;return 0;}
+  goto S35; /* by goto_state */
+S23:
+  printf("current state: 23: (row %d, column %d): char hex:0x%X (%c)\n", lxpLexer->lxrow, lxpLexer->lxcol, ch, ((ch>= 32) && (ch <= 127))?ch:' ');
+
+/*
+none        REGULAR_TX  
+*/    /*23[95(_)-0( )]->24:tx_type:0, is_cap:1*/// if(ch == CAT[LX_NESTLEVEL][6]){if (LX_LOOKAHEAD(CAT[LX_NESTLEVEL]) == -1) { LX_RESET; LX_CAPTURE(curr_pos, strlen(CAT[LX_NESTLEVEL])); LX_LOOKAHEAD_ADVANCE(CAT[LX_NESTLEVEL], 34); goto S34 /*nest enter goto 34, nest exit goto -1, action goto 34, find mode 23, goto 24*/;}else { LX_CAPTURE(curr_pos, 1);LX_ADVANCE(24);goto S24; /*1*/}}
+  if(ch == 0){lxpLexer->lxstate=23;return 0;}
+  goto S35; /* by goto_state */
+S24:
+  printf("current state: 24: (row %d, column %d): char hex:0x%X (%c)\n", lxpLexer->lxrow, lxpLexer->lxcol, ch, ((ch>= 32) && (ch <= 127))?ch:' ');
+
+/*
+none        REGULAR_TX  
+*/    /*24[78(N)-0( )]->25:tx_type:0, is_cap:1*/// if(ch == CAT[LX_NESTLEVEL][7]){if (LX_LOOKAHEAD(CAT[LX_NESTLEVEL]) == -1) { LX_RESET; LX_CAPTURE(curr_pos, strlen(CAT[LX_NESTLEVEL])); LX_LOOKAHEAD_ADVANCE(CAT[LX_NESTLEVEL], 34); goto S34 /*nest enter goto 34, nest exit goto -1, action goto 34, find mode 24, goto 25*/;}else { LX_CAPTURE(curr_pos, 1);LX_ADVANCE(25);goto S25; /*1*/}}
+  if(ch == 0){lxpLexer->lxstate=24;return 0;}
+  goto S35; /* by goto_state */
+S25:
+  printf("current state: 25: (row %d, column %d): char hex:0x%X (%c)\n", lxpLexer->lxrow, lxpLexer->lxcol, ch, ((ch>= 32) && (ch <= 127))?ch:' ');
+
+/*
+none        REGULAR_TX  
+*/    /*25[69(E)-0( )]->26:tx_type:0, is_cap:1*/// if(ch == CAT[LX_NESTLEVEL][8]){if (LX_LOOKAHEAD(CAT[LX_NESTLEVEL]) == -1) { LX_RESET; LX_CAPTURE(curr_pos, strlen(CAT[LX_NESTLEVEL])); LX_LOOKAHEAD_ADVANCE(CAT[LX_NESTLEVEL], 34); goto S34 /*nest enter goto 34, nest exit goto -1, action goto 34, find mode 25, goto 26*/;}else { LX_CAPTURE(curr_pos, 1);LX_ADVANCE(26);goto S26; /*1*/}}
+  if(ch == 0){lxpLexer->lxstate=25;return 0;}
+  goto S35; /* by goto_state */
+S26:
+  printf("current state: 26: (row %d, column %d): char hex:0x%X (%c)\n", lxpLexer->lxrow, lxpLexer->lxcol, ch, ((ch>= 32) && (ch <= 127))?ch:' ');
+
+/*
+none        REGULAR_TX  
+*/    /*26[83(S)-0( )]->27:tx_type:0, is_cap:1*/// if(ch == CAT[LX_NESTLEVEL][9]){if (LX_LOOKAHEAD(CAT[LX_NESTLEVEL]) == -1) { LX_RESET; LX_CAPTURE(curr_pos, strlen(CAT[LX_NESTLEVEL])); LX_LOOKAHEAD_ADVANCE(CAT[LX_NESTLEVEL], 34); goto S34 /*nest enter goto 34, nest exit goto -1, action goto 34, find mode 26, goto 27*/;}else { LX_CAPTURE(curr_pos, 1);LX_ADVANCE(27);goto S27; /*1*/}}
+  if(ch == 0){lxpLexer->lxstate=26;return 0;}
+  goto S35; /* by goto_state */
+S27:
+  printf("current state: 27: (row %d, column %d): char hex:0x%X (%c)\n", lxpLexer->lxrow, lxpLexer->lxcol, ch, ((ch>= 32) && (ch <= 127))?ch:' ');
+
+/*
+none        REGULAR_TX  
+*/    /*27[84(T)-0( )]->28:tx_type:0, is_cap:1*/// if(ch == CAT[LX_NESTLEVEL][10]){if (LX_LOOKAHEAD(CAT[LX_NESTLEVEL]) == -1) { LX_RESET; LX_CAPTURE(curr_pos, strlen(CAT[LX_NESTLEVEL])); LX_LOOKAHEAD_ADVANCE(CAT[LX_NESTLEVEL], 34); goto S34 /*nest enter goto 34, nest exit goto -1, action goto 34, find mode 27, goto 28*/;}else { LX_CAPTURE(curr_pos, 1);LX_ADVANCE(28);goto S28; /*1*/}}
+  if(ch == 0){lxpLexer->lxstate=27;return 0;}
+  goto S35; /* by goto_state */
+S28:
+  printf("current state: 28: (row %d, column %d): char hex:0x%X (%c)\n", lxpLexer->lxrow, lxpLexer->lxcol, ch, ((ch>= 32) && (ch <= 127))?ch:' ');
+
+/*
+none        REGULAR_TX  
+*/    /*28[76(L)-0( )]->29:tx_type:0, is_cap:1*/// if(ch == CAT[LX_NESTLEVEL][11]){if (LX_LOOKAHEAD(CAT[LX_NESTLEVEL]) == -1) { LX_RESET; LX_CAPTURE(curr_pos, strlen(CAT[LX_NESTLEVEL])); LX_LOOKAHEAD_ADVANCE(CAT[LX_NESTLEVEL], 34); goto S34 /*nest enter goto 34, nest exit goto -1, action goto 34, find mode 28, goto 29*/;}else { LX_CAPTURE(curr_pos, 1);LX_ADVANCE(29);goto S29; /*1*/}}
+  if(ch == 0){lxpLexer->lxstate=28;return 0;}
+  goto S35; /* by goto_state */
+S29:
+  printf("current state: 29: (row %d, column %d): char hex:0x%X (%c)\n", lxpLexer->lxrow, lxpLexer->lxcol, ch, ((ch>= 32) && (ch <= 127))?ch:' ');
+
+/*
+none        REGULAR_TX  
+*/    /*29[69(E)-0( )]->30:tx_type:0, is_cap:1*/// if(ch == CAT[LX_NESTLEVEL][12]){if (LX_LOOKAHEAD(CAT[LX_NESTLEVEL]) == -1) { LX_RESET; LX_CAPTURE(curr_pos, strlen(CAT[LX_NESTLEVEL])); LX_LOOKAHEAD_ADVANCE(CAT[LX_NESTLEVEL], 34); goto S34 /*nest enter goto 34, nest exit goto -1, action goto 34, find mode 29, goto 30*/;}else { LX_CAPTURE(curr_pos, 1);LX_ADVANCE(30);goto S30; /*1*/}}
+  if(ch == 0){lxpLexer->lxstate=29;return 0;}
+  goto S35; /* by goto_state */
+S30:
+  printf("current state: 30: (row %d, column %d): char hex:0x%X (%c)\n", lxpLexer->lxrow, lxpLexer->lxcol, ch, ((ch>= 32) && (ch <= 127))?ch:' ');
+
+/*
+none        REGULAR_TX  
+*/    /*30[86(V)-0( )]->31:tx_type:0, is_cap:1*/// if(ch == CAT[LX_NESTLEVEL][13]){if (LX_LOOKAHEAD(CAT[LX_NESTLEVEL]) == -1) { LX_RESET; LX_CAPTURE(curr_pos, strlen(CAT[LX_NESTLEVEL])); LX_LOOKAHEAD_ADVANCE(CAT[LX_NESTLEVEL], 34); goto S34 /*nest enter goto 34, nest exit goto -1, action goto 34, find mode 30, goto 31*/;}else { LX_CAPTURE(curr_pos, 1);LX_ADVANCE(31);goto S31; /*1*/}}
+  if(ch == 0){lxpLexer->lxstate=30;return 0;}
+  goto S35; /* by goto_state */
+S31:
+  printf("current state: 31: (row %d, column %d): char hex:0x%X (%c)\n", lxpLexer->lxrow, lxpLexer->lxcol, ch, ((ch>= 32) && (ch <= 127))?ch:' ');
+
+/*
+none        REGULAR_TX  
+*/    /*31[69(E)-0( )]->32:tx_type:0, is_cap:1*/// if(ch == CAT[LX_NESTLEVEL][14]){if (LX_LOOKAHEAD(CAT[LX_NESTLEVEL]) == -1) { LX_RESET; LX_CAPTURE(curr_pos, strlen(CAT[LX_NESTLEVEL])); LX_LOOKAHEAD_ADVANCE(CAT[LX_NESTLEVEL], 34); goto S34 /*nest enter goto 34, nest exit goto -1, action goto 34, find mode 31, goto 32*/;}else { LX_CAPTURE(curr_pos, 1);LX_ADVANCE(32);goto S32; /*1*/}}
+  if(ch == 0){lxpLexer->lxstate=31;return 0;}
+  goto S35; /* by goto_state */
+S32:
+  printf("current state: 32: (row %d, column %d): char hex:0x%X (%c)\n", lxpLexer->lxrow, lxpLexer->lxcol, ch, ((ch>= 32) && (ch <= 127))?ch:' ');
+
+/*
+none        REGULAR_TX  
+*/    /*32[76(L)-0( )]->33:tx_type:0, is_cap:1*/// if(ch == CAT[LX_NESTLEVEL][15]){if (LX_LOOKAHEAD(CAT[LX_NESTLEVEL]) == -1) { LX_RESET; LX_CAPTURE(curr_pos, strlen(CAT[LX_NESTLEVEL])); LX_LOOKAHEAD_ADVANCE(CAT[LX_NESTLEVEL], 34); goto S34 /*nest enter goto 34, nest exit goto -1, action goto 34, find mode 32, goto 33*/;}else { LX_CAPTURE(curr_pos, 1);LX_ADVANCE(33);goto S33; /*1*/}}
+  if(ch == 0){lxpLexer->lxstate=32;return 0;}
+  goto S35; /* by goto_state */
+S33:
+  printf("current state: 33: (row %d, column %d): char hex:0x%X (%c)\n", lxpLexer->lxrow, lxpLexer->lxcol, ch, ((ch>= 32) && (ch <= 127))?ch:' ');
+
+/*
+none        REGULAR_TX  
+*/    /*33[93(])-0( )]->34:tx_type:0, is_cap:1*/// if(ch == CAT[LX_NESTLEVEL][16]){if (LX_LOOKAHEAD(CAT[LX_NESTLEVEL]) == -1) { LX_RESET; LX_CAPTURE(curr_pos, strlen(CAT[LX_NESTLEVEL])); LX_LOOKAHEAD_ADVANCE(CAT[LX_NESTLEVEL], 34); goto S34 /*nest enter goto 34, nest exit goto -1, action goto 34, find mode 33, goto 34*/;}else { LX_CAPTURE(curr_pos, 1);LX_ADVANCE(34);goto S34; /*1*/}}
+  if(ch == 0){lxpLexer->lxstate=33;return 0;}
+  goto S35; /* by goto_state */
+S34:
+  printf("current state: 34: (row %d, column %d): char hex:0x%X (%c)\n", lxpLexer->lxrow, lxpLexer->lxcol, ch, ((ch>= 32) && (ch <= 127))?ch:' ');
+  if((ch == 0) && (is_final == 0)) {lxpLexer->lxstate=34;return 0;}
+  LX_ACTION(34);/*NO_SEND*/LX_RESET;
+  if(ch == 0) {LX_SEND(0);return 0;}
+  if(LX_LEAVE_NESTING() == 1){goto L0;}
+  goto S11; /* by next_state */
+S35:
+  printf("current state: 35: (row %d, column %d): char hex:0x%X (%c)\n", lxpLexer->lxrow, lxpLexer->lxcol, ch, ((ch>= 32) && (ch <= 127))?ch:' ');
+
+/*
+REGULAR_TX  INIT_TX     
+*/    /*35[60(<)-0( )]->12:tx_type:2, is_cap:1*/ if(ch == 60 /* decimal is required for full unicode support, printable character is '<' */ ){  LX_ACTION(35);/*NO_SEND*/LX_RESET;LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(12);goto S12; /*1*/}
+
+/*
+REGULAR_TX  INIT_TX     
+*/    /*35[67(C)-0( )]->18:tx_type:2, is_cap:1*/ if(ch == CAT[LX_NESTLEVEL][0]){  LX_ACTION(35);/*NO_SEND*/if (LX_LOOKAHEAD(CAT[LX_NESTLEVEL]) == -1) { LX_RESET; LX_CAPTURE(curr_pos, strlen(CAT[LX_NESTLEVEL])); LX_LOOKAHEAD_ADVANCE(CAT[LX_NESTLEVEL], 34); goto S34 /*nest enter goto 34, nest exit goto -1, action goto 34, find mode 35, goto 18*/;}else { LX_CAPTURE(curr_pos, 1);LX_ADVANCE(18);goto S18; /*1*/}}
+
+/*
+REGULAR_TX  REGULAR_TX  
+*/    /*35[0( )-5( )]->36:tx_type:0, is_cap:1*/  if(ch != 0){LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(36);goto S36; /*1*/}
+  if(is_final == 0) {lxpLexer->lxstate=35;return 0;}
+  LX_SEND(0);return 0;
+  
+S36:
+  printf("current state: 36: (row %d, column %d): char hex:0x%X (%c)\n", lxpLexer->lxrow, lxpLexer->lxcol, ch, ((ch>= 32) && (ch <= 127))?ch:' ');
+  goto S35; /* by goto_state */
+S37:
+  printf("current state: 37: (row %d, column %d): char hex:0x%X (%c)\n", lxpLexer->lxrow, lxpLexer->lxcol, ch, ((ch>= 32) && (ch <= 127))?ch:' ');
+  goto S36; /* by goto_state */
 
   return 0;
 }
@@ -2190,49 +2507,11 @@ int ParseReadFile(
   return 0;
 }
 #endif /* LEMONEX */
-#line 46 "example/math.y"
+#line 42 "example/heredoc.y"
 
 	int main()
 	{
-// 	void* pParser = ParseAlloc (malloc);
-// 
-// 	/* First input:
-// 		15 / 5
-// 									*/
-// 	Parse (pParser, INTEGER, 15);
-// 	Parse (pParser, TIMES, 0);
-// 	Parse (pParser, INTEGER, 5);
-// 	Parse (pParser, 0, 0);
-// 
-// 	/*  Second input:
-// 			50 + 125
-// 								*/
-// 
-// 
-// 	Parse (pParser, INTEGER, 50);
-// 	Parse (pParser, PLUS, 0);
-// 	Parse (pParser, INTEGER, 125);
-// 	Parse (pParser, 0, 0);
-// 
-// 
-// 	/*  Third input:
-// 			50 * 125 + 125
-// 								*/
-// 
-// 
-// 	Parse (pParser, INTEGER, 2);//	2	(2)			2	(2)		5	(5)
-// 	Parse (pParser, TIMES, 0);//	x				x			+
-// 	Parse (pParser, INTEGER, 5);//	5	(10)		5	(7)		15	(20)
-// 	Parse (pParser, PLUS, 0);//		+				+			x
-// 	Parse (pParser, INTEGER, 15);//	15	(10+15)		15	(7x15)	2	(20x2)
-// 	Parse (pParser, 0, 0);//		=	25			=	105		=	40
-// 
-// 
-// 	ParseFree(pParser, free );
-	puts("parsing 5+5");
-	if(ParseReadString("5+5", "<string>", "DEBUG: ") != 0) {
-		printf("Error\n");
-	} else printf("Success\n");
-
+// 		LX_REPARSE("<<CAT[LX_NESTLEVEL] HEREDOC<<EOF <<CAT[LX_NESTLEVEL] <<EOF K <<CAT[LX_NESTLEVEL]");
+		LX_REPARSE("<<CAT <<EOF EOF CAT");
 	}
-#line 3464 "./example/math/math.c"
+#line 3614 "./example/heredoc/heredoc.c"

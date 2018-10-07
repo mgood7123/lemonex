@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <assert.h> // this uses assert
 #include <stdlib.h> // uses callbacks to free and malloc, have them already available
+#include <string.h>
 #define LEMONEX 1
 /* Make sure the INTERFACE macro is defined.
 */
@@ -105,7 +106,7 @@ int ParseReadString(
 #line 3 "./example/parse.y"
 
 #include <string.h>
-#line 108 "example/parse/parse.c"
+#line 109 "example/parse/parse.c"
 #define LEMONEX_DBGLVL 0
 #include "parse.h"
 /* Next is all token values, in a form suitable for use by makeheaders.
@@ -180,8 +181,15 @@ static int lx_leavenesting(
   lxLexer *lxpLexer           /* The lexer */
 )
 {
+	if (lxpLexer->nestinglevel == 0) {
+		printf("NEST:cannot leave empty nest\n");
+		printf("NEST:leave-level:%d\n", lxpLexer->nestinglevel);
+		return -1;
+	}
 #if LEMONEX_DBGLVL>=2
-  printf("NEST:leave:%d\n", lxpLexer->nestingstack[lxpLexer->nestinglevel-1].count);
+  printf("NEST:leave-level:%d\n", lxpLexer->nestinglevel);
+  printf("NEST:leave:%d\n", lxpLexer->nestingstack[lxpLexer->nestinglevel].count);
+  printf("NEST:leave-1:%d\n", lxpLexer->nestingstack[lxpLexer->nestinglevel-1].count);
 #endif
   if(lxpLexer->nestingstack[lxpLexer->nestinglevel-1].count == 0){
     lxpLexer->lxstate = lxpLexer->nestingstack[lxpLexer->nestinglevel-1].prev_state;
@@ -393,6 +401,134 @@ static int lx_advance(
   }
   *pp = p;
   return 0;
+}
+
+int bcmpcq__2(void const *vp, size_t n, void const *vp2, size_t n2)
+{
+    int string_match = 0;
+    unsigned char const *p = vp;
+    unsigned char const *p2 = vp2;
+    int matches=0;
+    int contains_matches=0;
+    for (size_t i=0; i<n; i++) {
+        if (p[i] == p2[i]) {
+            matches++;
+        } else {
+            if (matches) contains_matches = 1;
+            break;
+        }
+    }
+    if (matches == 0) {
+        return -1;
+	} else if (matches == n) {
+		return 0;
+    } else {
+        int ret = 0;
+        if (contains_matches) ret = 1;
+        return ret;
+    }
+}
+
+
+/*
+** The following is executed to lookahead the current position in the input stream without introducing the need for backtracking
+*/
+
+static int lx_lookahead(
+  lxLexer *lxpLexer,           /* The lexer */
+  char** curr_pos,
+  char** pp,
+  char* buf_end,
+  int* plen,
+  int* pch,
+  char * lookahead_token
+){
+  int lookahead_lxcol = lxpLexer->lxcol;
+  int lookahead_lxrow = lxpLexer->lxrow;
+#if LEMONEX_DBGLVL>=1
+  printf("checking for match (%s) against %s\n", lookahead_token, *curr_pos);
+#endif
+  if (bcmpcq__2(lookahead_token, strlen(lookahead_token), *curr_pos, strlen(*curr_pos)) == 0) {
+#if LEMONEX_DBGLVL>=1
+	  puts("LOOKAHEAD: found match");
+#endif
+	  return -1;
+  }
+  char* p = *pp;
+  if(p == buf_end){
+    *pch = 0;
+	puts("EOF");
+    return 0;
+  }
+  
+
+  ++lookahead_lxcol;
+  if((*p == '\r') && (*(p+1) == '\n')) {
+    ++p;
+    assert(*p == '\n');
+  }
+  if(*p == '\n') {
+    ++lookahead_lxrow;
+    lookahead_lxcol = 0;
+  }
+
+  *plen = 0;
+  if((*p & MASK6BYTES) == MASK6BYTES) {
+    // 1111110x 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx
+    *pch = (int)(buf_end - p);
+    if(*pch < 6){
+      return 1;
+    }
+    *pch = ((*p & 0x01) << 30) | ( (*(p+1) & MASKBITS) << 24) | ( (*(p+2) & MASKBITS) << 18) | ( (*(p+3) & MASKBITS) << 12) | ( (*(p+4) & MASKBITS) << 6) | (*(p+5) & MASKBITS);
+    *plen = 6;
+    p += 6;
+  } else if((*p & MASK5BYTES) == MASK5BYTES) {
+    // 111110xx 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx
+    *pch = (int)(buf_end - p);
+    if(*pch < 5){
+      return 1;
+    }
+    *pch = ((*p & 0x03) << 24) | ( (*(p+1) & MASKBITS) << 18) | ( (*(p+2) & MASKBITS) << 12) | ( (*(p+3) & MASKBITS) << 6) | (*(p+4) & MASKBITS);
+    *plen = 5;
+    p += 5;
+  } else if((*p & MASK4BYTES) == MASK4BYTES) {
+    // 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
+    *pch = (int)(buf_end - p);
+    if(*pch < 4){
+      return 1;
+    }
+    *pch = ((*p & 0x07) << 18) | ( (*(p+1) & MASKBITS) << 12) | ( (*(p+2) & MASKBITS) << 6) | (*(p+3) & MASKBITS);
+    *plen = 4;
+    p += 4;
+  } else if((*p & MASK3BYTES) == MASK3BYTES) {
+    // 1110xxxx 10xxxxxx 10xxxxxx
+    *pch = (int)(buf_end - p);
+    if(*pch < 3){
+      return 1;
+    }
+    *pch = ((*p & 0x0F) << 12) | ( (*(p+1) & MASKBITS) << 6) | (*(p+2) & MASKBITS);
+    *plen = 3;
+    p += 3;
+  } else if((*p & MASK2BYTES) == MASK2BYTES) {
+    // 110xxxxx 10xxxxxx
+    *pch = (int)(buf_end - p);
+    if(*pch < 2){
+      return 1;
+    }
+    *pch = ((*p & 0x1F) << 6) | (*(p+1) & MASKBITS);
+    *plen = 2;
+    p += 2;
+  } else {
+    // 0xxxxxxx
+    *pch = (int)(buf_end - p);
+    if(*pch < 1){
+      return 1;
+    }
+    *pch = (*p & 0xff);
+    *plen = 1;
+    p += 1;
+  }
+  return 1;
 }
 
 static int lxcls_l[] = {
@@ -846,10 +982,39 @@ static int lx_isclass(int ch, int* clsl){
 #define LX_ISENDL(ch) (lx_isclass(ch, lxcls_e))
 
 #define LX_ADVANCE(ls) {if(lx_advance(lxpLexer, &curr_pos, &p, buf_end, &curr_len, &ch) != 0){lxpLexer->lxstate=ls;return ch;}}
+
+int lx_lookahead_(lxLexer *lxpLexer,           /* The lexer */
+  char** curr_pos,
+  char** pp,
+  char* buf_end,
+  int* plen,
+  int* pch,
+  char * lookahead_token) {
+	char * curpos = *curr_pos;
+	return lx_lookahead(lxpLexer, curr_pos, pp, buf_end, plen, pch, lookahead_token);
+}
+
+int lx_lookahead_advance(lxLexer *lxpLexer,           /* The lexer */
+  char** curr_pos,
+  char** pp,
+  char* buf_end,
+  int* plen,
+  int* pch,
+  char * lookahead_token) {
+	  for (int i = 0; i < strlen(lookahead_token); i++) {
+		  if(lx_advance(lxpLexer, curr_pos, pp, buf_end, plen, pch) != 0){return -1;};
+	  }
+	  return 0;
+}
+
+
+#define LX_LOOKAHEAD(tok) lx_lookahead_(lxpLexer, &curr_pos, &p, buf_end, &curr_len, &ch, tok)
+#define LX_LOOKAHEAD_ADVANCE(tok, ls) if (lx_lookahead_advance(lxpLexer, &curr_pos, &p, buf_end, &curr_len, &ch, tok) == -1) { lxpLexer->lxstate=ls;return ch; }
 #define LX_RESET lx_tokenctor(lxpLexer, LX_TOK_RESET, 0, 0, 0)
 #define LX_SEND(major_token) lx_tokenctor(lxpLexer, LX_TOK_FINALIZE, major_token, 0, 0);Parse(yyp, major_token, lxpLexer->token ParseARG_VNAME)
 #define LX_CAPTURE(curr_pos, curr_len) lx_tokenctor(lxpLexer, LX_TOK_CAPTURE, 0, curr_pos, curr_len)
 #define LX_SENDERR(err_token) LX_CAPTURE(curr_pos, curr_len);LX_SEND(err_token)
+#define LX_REPARSE(s) ParseReadString(s, "<REPARSED>", "DEBUG_REPARSED: ")
 
 /*
 ** This function allocates a new lexer.
@@ -1509,7 +1674,7 @@ static void yy_reduce(
 {
   yy_destructor(yypParser,4,&yymsp[0].minor);
 }
-#line 2738 "example/parse/parse.c"
+#line 2903 "example/parse/parse.c"
         break;
       default:
         break;
@@ -1573,7 +1738,7 @@ static void yy_syntax_error(
 #line 7 "./example/parse.y"
 
   puts("Syntax error!");
-#line 2802 "example/parse/parse.c"
+#line 2967 "example/parse/parse.c"
   ParseARG_STORE; /* Suppress warning about unused %extra_argument variable */
 }
 
@@ -1595,7 +1760,7 @@ static void yy_accept(
 #line 11 "./example/parse.y"
 
   puts("parsing complete!");
-#line 2824 "example/parse/parse.c"
+#line 2989 "example/parse/parse.c"
   ParseARG_STORE; /* Suppress warning about unused %extra_argument variable */
 }
 
@@ -1784,7 +1949,7 @@ static void lx_state_action_5(lxLexer *lxpLexer){ printf("HD_%s: %s\n", "START",
 static void lx_state_action_6(lxLexer *lxpLexer){
 	printf("COMMENT_%s: %s\n", "CONTENTS", (lxpLexer->token).buf);
 	puts("parsing...");
-	  if(ParseReadString((lxpLexer->token).buf, "<string>", "DEBUG: ") != 0) {
+	  if(LX_REPARSE((lxpLexer->token).buf) != 0) {
     printf("Error\n");
   } else printf("Success\n");
 }
@@ -1792,7 +1957,7 @@ static void lx_state_action_8(lxLexer *lxpLexer){ printf("COMMENT_%s: %s\n", "EN
 static void lx_state_action_9(lxLexer *lxpLexer){
 	printf("COMMENT_%s: %s\n", "CONTENTS", (lxpLexer->token).buf);
 	puts("parsing...");
-	  if(ParseReadString((lxpLexer->token).buf, "<string>", "DEBUG: ") != 0) {
+	  if(LX_REPARSE((lxpLexer->token).buf) != 0) {
     printf("Error\n");
   } else printf("Success\n");
 }
@@ -1844,9 +2009,9 @@ L0:
     case 16:goto S16;
   }
 S1:
-  if(ch == 47){LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(3);goto S3; /*1*/}
-  if(ch == 97){LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(5);goto S5; /*1*/}
-  if(ch != 0){LX_ADVANCE(2);goto S2; /*1*/}
+  /*1[47(/)-0( )]->3:tx_type:0, is_cap:1*/ if(ch == 47 /* decimal is required for full unicode support, printable character is '/' */ ){LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(3);goto S3; /*1*/}
+  /*1[97(a)-0( )]->5:tx_type:0, is_cap:1*/ if(ch == 97 /* decimal is required for full unicode support, printable character is 'a' */ ){LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(5);goto S5; /*1*/}
+  /*1[0( )-5( )]->2:tx_type:0, is_cap:0*/  if(ch != 0){LX_ADVANCE(2);goto S2; /*1*/}
   lxpLexer->lxstate=1;return 0;
   
 S2:
@@ -1855,7 +2020,7 @@ S2:
   if(ch == 0) {LX_SEND(0);return 0;}
   goto S1; /* by init_state */
 S3:
-  if(ch == 42){LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(4);goto S4; /*1*/}
+  /*3[42(*)-0( )]->4:tx_type:0, is_cap:1*/ if(ch == 42 /* decimal is required for full unicode support, printable character is '*' */ ){LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(4);goto S4; /*1*/}
   if(ch == 0){lxpLexer->lxstate=3;return 0;}
   goto S2; /* by goto_state */
 S4:
@@ -1871,15 +2036,15 @@ S5:
   LX_ENTER_NESTING(1);
   goto S12; /* by retn_state */
 S6:
-  if(ch == 42){LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(7);goto S7; /*1*/}
-  if(ch == 42){  LX_ACTION(6);/*NO_SEND*/LX_RESET;LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(7);goto S7; /*1*/}
-  /*loop --> 9*/
-  if(ch != 0){LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(11);goto S11; /*1*/}
+  /*6[42(*)-0( )]->7:tx_type:0, is_cap:1*/ if(ch == 42 /* decimal is required for full unicode support, printable character is '*' */ ){LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(7);goto S7; /*1*/}
+  /*6[42(*)-0( )]->7:tx_type:2, is_cap:1*/ if(ch == 42 /* decimal is required for full unicode support, printable character is '*' */ ){  LX_ACTION(6);/*NO_SEND*/LX_RESET;LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(7);goto S7; /*1*/}
+  /*6[0( )-0( )]->9:tx_type:4, is_cap:0*/  /*loop --> 9*/
+  /*6[0( )-5( )]->11:tx_type:0, is_cap:1*/  if(ch != 0){LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(11);goto S11; /*1*/}
   if(is_final == 0) {lxpLexer->lxstate=6;return 0;}
   LX_SEND(0);return 0;
   
 S7:
-  if(ch == 47){LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(8);goto S8; /*1*/}
+  /*7[47(/)-0( )]->8:tx_type:0, is_cap:1*/ if(ch == 47 /* decimal is required for full unicode support, printable character is '/' */ ){LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(8);goto S8; /*1*/}
   if(ch == 0){lxpLexer->lxstate=7;return 0;}
   goto S9; /* by goto_state */
 S8:
@@ -1889,8 +2054,8 @@ S8:
   if(LX_LEAVE_NESTING() == 1){goto L0;}
   goto S6; /* by next_state */
 S9:
-  if(ch == 42){  LX_ACTION(9);/*NO_SEND*/LX_RESET;LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(7);goto S7; /*1*/}
-  if(ch != 0){LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(10);goto S10; /*1*/}
+  /*9[42(*)-0( )]->7:tx_type:2, is_cap:1*/ if(ch == 42 /* decimal is required for full unicode support, printable character is '*' */ ){  LX_ACTION(9);/*NO_SEND*/LX_RESET;LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(7);goto S7; /*1*/}
+  /*9[0( )-5( )]->10:tx_type:0, is_cap:1*/  if(ch != 0){LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(10);goto S10; /*1*/}
   if(is_final == 0) {lxpLexer->lxstate=9;return 0;}
   LX_SEND(0);return 0;
   
@@ -1899,10 +2064,10 @@ S10:
 S11:
   goto S10; /* by goto_state */
 S12:
-  if(ch == 99){LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(13);goto S13; /*1*/}
-  if(ch == 99){  LX_ACTION(12);/*NO_SEND*/LX_RESET;LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(13);goto S13; /*1*/}
-  /*loop --> 14*/
-  if(ch != 0){LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(16);goto S16; /*1*/}
+  /*12[99(c)-0( )]->13:tx_type:0, is_cap:1*/ if(ch == 99 /* decimal is required for full unicode support, printable character is '\c' */ ){LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(13);goto S13; /*1*/}
+  /*12[99(c)-0( )]->13:tx_type:2, is_cap:1*/ if(ch == 99 /* decimal is required for full unicode support, printable character is '\c' */ ){  LX_ACTION(12);/*NO_SEND*/LX_RESET;LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(13);goto S13; /*1*/}
+  /*12[0( )-0( )]->14:tx_type:4, is_cap:0*/  /*loop --> 14*/
+  /*12[0( )-5( )]->16:tx_type:0, is_cap:1*/  if(ch != 0){LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(16);goto S16; /*1*/}
   if(is_final == 0) {lxpLexer->lxstate=12;return 0;}
   LX_SEND(0);return 0;
   
@@ -1913,8 +2078,8 @@ S13:
   if(LX_LEAVE_NESTING() == 1){goto L0;}
   goto S12; /* by next_state */
 S14:
-  if(ch == 99){  LX_ACTION(14);/*NO_SEND*/LX_RESET;LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(13);goto S13; /*1*/}
-  if(ch != 0){LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(15);goto S15; /*1*/}
+  /*14[99(c)-0( )]->13:tx_type:2, is_cap:1*/ if(ch == 99 /* decimal is required for full unicode support, printable character is '\c' */ ){  LX_ACTION(14);/*NO_SEND*/LX_RESET;LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(13);goto S13; /*1*/}
+  /*14[0( )-5( )]->15:tx_type:0, is_cap:1*/  if(ch != 0){LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(15);goto S15; /*1*/}
   if(is_final == 0) {lxpLexer->lxstate=14;return 0;}
   LX_SEND(0);return 0;
   
@@ -2078,4 +2243,4 @@ int main(int argc, char* argv[]) {
   } else printf("Success\n");
   return 0;
 }
-#line 3307 "example/parse/parse.c"
+#line 3472 "example/parse/parse.c"

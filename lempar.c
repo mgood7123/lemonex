@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <assert.h> // this uses assert
 #include <stdlib.h> // uses callbacks to free and malloc, have them already available
+#include <string.h>
 #define LEMONEX 1
 /* Make sure the INTERFACE macro is defined.
 */
@@ -66,22 +67,6 @@ struct lxToken{
 };
 #endif /* LEMONEX */
 %%
-/* declare function definitions here, this will be blank if there are no definitions */
-%%
-/* First off, code is included that follows the "include" declaration
-** in the input grammar file. */
-%%
-/* Next is all token values, in a form suitable for use by makeheaders.
-** This section will be null unless lemon is run with the -m switch.
-*/
-/* 
-** These constants (all generated automatically by the parser generator)
-** specify the various kinds of tokens (terminals) that the parser
-** understands. 
-**
-** Each symbol here is a terminal symbol in the grammar.
-*/
-%%
 #if LEMONEX
 #ifdef ParseLX_NESTINGDEPTH
 struct lxNestingFrame {
@@ -104,7 +89,31 @@ struct lxLexer {
 #endif
 };
 typedef struct lxLexer lxLexer;
+#ifdef ParseLX_NESTINGDEPTH
+#define LX_NESTLEVEL (lxpLexer->nestinglevel-(lxpLexer->nestinglevel==0?0:lxpLexer->nestinglevel)) + lxpLexer->nestingstack[(lxpLexer->nestinglevel==0?1:lxpLexer->nestinglevel)-1].count
+#define LX_NESTMAX ParseLX_NESTINGDEPTH
+#else
+#define LX_NESTLEVEL 0
+#define LX_NESTMAX 0
+#endif
 
+%%
+/* declare function definitions here, this will be blank if there are no definitions */
+%%
+/* First off, code is included that follows the "include" declaration
+** in the input grammar file. */
+%%
+/* Next is all token values, in a form suitable for use by makeheaders.
+** This section will be null unless lemon is run with the -m switch.
+*/
+/* 
+** These constants (all generated automatically by the parser generator)
+** specify the various kinds of tokens (terminals) that the parser
+** understands. 
+**
+** Each symbol here is a terminal symbol in the grammar.
+*/
+%%
 #ifdef ParseLX_NESTINGDEPTH
 static int lx_enternesting(
   lxLexer *lxpLexer,           /* The lexer */
@@ -141,8 +150,19 @@ static int lx_leavenesting(
   lxLexer *lxpLexer           /* The lexer */
 )
 {
+	if (lxpLexer->nestinglevel == 0) {
+		printf("NEST:cannot leave empty nest\n");
+		printf("NEST:leave-level:%d\n", lxpLexer->nestinglevel);
+		return -1;
+	}
+	if (lxpLexer->nestingstack[lxpLexer->nestinglevel-1].count != 0) {
+		lxpLexer->nestingstack[lxpLexer->nestinglevel-1].count--;
+		return 0;
+	}
 #if LEMONEX_DBGLVL>=2
-  printf("NEST:leave:%d\n", lxpLexer->nestingstack[lxpLexer->nestinglevel-1].count);
+  printf("NEST:leave-level:%d\n", lxpLexer->nestinglevel);
+  printf("NEST:leave:%d\n", lxpLexer->nestingstack[lxpLexer->nestinglevel].count);
+  printf("NEST:leave-1:%d\n", lxpLexer->nestingstack[lxpLexer->nestinglevel-1].count);
 #endif
   if(lxpLexer->nestingstack[lxpLexer->nestinglevel-1].count == 0){
     lxpLexer->lxstate = lxpLexer->nestingstack[lxpLexer->nestinglevel-1].prev_state;
@@ -357,6 +377,134 @@ static int lx_advance(
   return 0;
 }
 
+int bcmpcq__2(void const *vp, size_t n, void const *vp2, size_t n2)
+{
+    int string_match = 0;
+    unsigned char const *p = vp;
+    unsigned char const *p2 = vp2;
+    int matches=0;
+    int contains_matches=0;
+    for (size_t i=0; i<n; i++) {
+        if (p[i] == p2[i]) {
+            matches++;
+        } else {
+            if (matches) contains_matches = 1;
+            break;
+        }
+    }
+    if (matches == 0) {
+        return -1;
+	} else if (matches == n) {
+		return 0;
+    } else {
+        int ret = 0;
+        if (contains_matches) ret = 1;
+        return ret;
+    }
+}
+
+
+/*
+** The following is executed to lookahead the current position in the input stream without introducing the need for backtracking
+*/
+
+static int lx_lookahead(
+  lxLexer *lxpLexer,           /* The lexer */
+  char** curr_pos,
+  char** pp,
+  char* buf_end,
+  int* plen,
+  int* pch,
+  char * lookahead_token
+){
+  int lookahead_lxcol = lxpLexer->lxcol;
+  int lookahead_lxrow = lxpLexer->lxrow;
+#if LEMONEX_DBGLVL>=1
+  printf("checking for match (%s) against %s\n", lookahead_token, *curr_pos);
+#endif
+  if (bcmpcq__2(lookahead_token, strlen(lookahead_token), *curr_pos, strlen(*curr_pos)) == 0) {
+#if LEMONEX_DBGLVL>=1
+	  puts("LOOKAHEAD: found match");
+#endif
+	  return -1;
+  }
+  char* p = *pp;
+  if(p == buf_end){
+    *pch = 0;
+	puts("EOF");
+    return 0;
+  }
+  
+
+  ++lookahead_lxcol;
+  if((*p == '\r') && (*(p+1) == '\n')) {
+    ++p;
+    assert(*p == '\n');
+  }
+  if(*p == '\n') {
+    ++lookahead_lxrow;
+    lookahead_lxcol = 0;
+  }
+
+  *plen = 0;
+  if((*p & MASK6BYTES) == MASK6BYTES) {
+    // 1111110x 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx
+    *pch = (int)(buf_end - p);
+    if(*pch < 6){
+      return 1;
+    }
+    *pch = ((*p & 0x01) << 30) | ( (*(p+1) & MASKBITS) << 24) | ( (*(p+2) & MASKBITS) << 18) | ( (*(p+3) & MASKBITS) << 12) | ( (*(p+4) & MASKBITS) << 6) | (*(p+5) & MASKBITS);
+    *plen = 6;
+    p += 6;
+  } else if((*p & MASK5BYTES) == MASK5BYTES) {
+    // 111110xx 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx
+    *pch = (int)(buf_end - p);
+    if(*pch < 5){
+      return 1;
+    }
+    *pch = ((*p & 0x03) << 24) | ( (*(p+1) & MASKBITS) << 18) | ( (*(p+2) & MASKBITS) << 12) | ( (*(p+3) & MASKBITS) << 6) | (*(p+4) & MASKBITS);
+    *plen = 5;
+    p += 5;
+  } else if((*p & MASK4BYTES) == MASK4BYTES) {
+    // 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
+    *pch = (int)(buf_end - p);
+    if(*pch < 4){
+      return 1;
+    }
+    *pch = ((*p & 0x07) << 18) | ( (*(p+1) & MASKBITS) << 12) | ( (*(p+2) & MASKBITS) << 6) | (*(p+3) & MASKBITS);
+    *plen = 4;
+    p += 4;
+  } else if((*p & MASK3BYTES) == MASK3BYTES) {
+    // 1110xxxx 10xxxxxx 10xxxxxx
+    *pch = (int)(buf_end - p);
+    if(*pch < 3){
+      return 1;
+    }
+    *pch = ((*p & 0x0F) << 12) | ( (*(p+1) & MASKBITS) << 6) | (*(p+2) & MASKBITS);
+    *plen = 3;
+    p += 3;
+  } else if((*p & MASK2BYTES) == MASK2BYTES) {
+    // 110xxxxx 10xxxxxx
+    *pch = (int)(buf_end - p);
+    if(*pch < 2){
+      return 1;
+    }
+    *pch = ((*p & 0x1F) << 6) | (*(p+1) & MASKBITS);
+    *plen = 2;
+    p += 2;
+  } else {
+    // 0xxxxxxx
+    *pch = (int)(buf_end - p);
+    if(*pch < 1){
+      return 1;
+    }
+    *pch = (*p & 0xff);
+    *plen = 1;
+    p += 1;
+  }
+  return 1;
+}
+
 %%
 
 /* returns 1 if ch is in cls */
@@ -378,10 +526,39 @@ static int lx_isclass(int ch, int* clsl){
 #define LX_ISENDL(ch) (lx_isclass(ch, lxcls_e))
 
 #define LX_ADVANCE(ls) {if(lx_advance(lxpLexer, &curr_pos, &p, buf_end, &curr_len, &ch) != 0){lxpLexer->lxstate=ls;return ch;}}
+
+int lx_lookahead_(lxLexer *lxpLexer,           /* The lexer */
+  char** curr_pos,
+  char** pp,
+  char* buf_end,
+  int* plen,
+  int* pch,
+  char * lookahead_token) {
+	char * curpos = *curr_pos;
+	return lx_lookahead(lxpLexer, curr_pos, pp, buf_end, plen, pch, lookahead_token);
+}
+
+int lx_lookahead_advance(lxLexer *lxpLexer,           /* The lexer */
+  char** curr_pos,
+  char** pp,
+  char* buf_end,
+  int* plen,
+  int* pch,
+  char * lookahead_token) {
+	  for (int i = 0; i < strlen(lookahead_token); i++) {
+		  if(lx_advance(lxpLexer, curr_pos, pp, buf_end, plen, pch) != 0){return -1;};
+	  }
+	  return 0;
+}
+
+
+#define LX_LOOKAHEAD(tok) lx_lookahead_(lxpLexer, &curr_pos, &p, buf_end, &curr_len, &ch, tok)
+#define LX_LOOKAHEAD_ADVANCE(tok, ls) if (lx_lookahead_advance(lxpLexer, &curr_pos, &p, buf_end, &curr_len, &ch, tok) == -1) { lxpLexer->lxstate=ls;return ch; }
 #define LX_RESET lx_tokenctor(lxpLexer, LX_TOK_RESET, 0, 0, 0)
 #define LX_SEND(major_token) lx_tokenctor(lxpLexer, LX_TOK_FINALIZE, major_token, 0, 0);Parse(yyp, major_token, lxpLexer->token ParseARG_VNAME)
 #define LX_CAPTURE(curr_pos, curr_len) lx_tokenctor(lxpLexer, LX_TOK_CAPTURE, 0, curr_pos, curr_len)
 #define LX_SENDERR(err_token) LX_CAPTURE(curr_pos, curr_len);LX_SEND(err_token)
+#define LX_REPARSE(s) ParseReadString(s, "<REPARSED>", "DEBUG_REPARSED: ")
 
 /*
 ** This function allocates a new lexer.

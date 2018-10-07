@@ -1,3 +1,4 @@
+%lexer_debuglevel HIGH.
 // %nonassoc makes it do in order found
 %token_prefix TOKEN_MATH_
 
@@ -13,21 +14,43 @@
   puts("Syntax error!");
 }
 
+%include {
+char * HD = NULL;
+char * PL = "+";
+char * V1 = "\"PL\"";
+}
+
 %start_symbol rModule
 // %token_type {struct lxLexer}
 rModule ::= .
-WORD ::= "[\d]+". { printf("Recieved WORD %s\n", $$.buf); }
-NUMBER ::= "[0-9]". { printf("Recieved NUMBER %s\n", $$.buf); }
-PLUS_ ::= "+". { printf("Recieved PLUS %s\n", $$.buf); }
-EOL ::= "|". { printf("Recieved EOL %s\n", $$.buf); }
-EOF ::= !".". { printf("Recieved EOF %s\n", $$.buf); }
-EOF1 ::= "\t". { printf("Recieved EOF %s\n", $$.buf); }
-EOF1 ::= "\l". { printf("Recieved EOF %s\n", $$.buf); }
-EOF1 ::= "\d". { printf("Recieved EOF %s\n", $$.buf); }
+// WORD ::= "[\d]+". { printf("Recieved WORD %s\n", $$.buf); }
+// NUMBER ::= "\d". { printf("Recieved NUMBER %s\n", $$.buf); }
+PLU ::= $"PA". { printf("Recieved PLUS %s\n", $$.buf); } // $"PL" == "\"PL\""
+PLU ::= $"PL". { printf("Recieved PLUS %s\n", $$.buf); } // $"PL" == "\"PL\""
+PLU ::= $"PB". { printf("Recieved PLUS %s\n", $$.buf); } // $"PL" == "\"PL\""
+// V1 ::= $"V1".
+// V2 ::= $"V2".
+V1 ::= $V1. { puts("V1");}
+V2 ::= $V2. { puts("V2");}
+// V2 ::= $V2.
+// MUL ::= "*". { printf("Recieved TIMES %s\n", $$.buf); }
+// EOL ::= $"D". { printf("Recieved EOL %s\n", $$.buf); }
+HEREDOC ::= "<1.*[\n ]". [HD] { HD = $$.buf+2; printf("S: \"%s\"\n", HD); }
+WS ::= ".*". { printf("OTHER: %s\n", $$.buf); }
 
-%lexer_mode PARSE.
+%lexer_mode HD.
+ENTER_HEREDOC ::= "<1.*[\n ]". [HD] { HD = $$.buf+2; printf("S: \"%s\"\n", HD); }
+LEAVE_HEREDOC ::= "<2". [<] { printf("E: %s\n", $$.buf); }
+V2 ::= $V2. { puts("V2");}
+WS ::= ".*". { printf("HD_%s: %s\n", "CONTENTS", $$.buf); }
+// 
+// %lexer_mode D.
+// LEAVE_MLCOMMENT ::= "5". [<] { printf("COMMENT_%s: %s\n", "END", $$.buf); }
+// WS ::= ".*". { printf("HD_%s: %s\n", "CONTENTS", $$.buf); }
+
+// %lexer_mode PARSE.
 // %token_type {int}
-P ::= "A".
+// P ::= "A".
 // program ::= expr(A).   { printf("Result=%d\n", A); }
 // expr(A) ::= expr(B) MINUS  expr(C).   { A = B - C; }
 // expr(A) ::= expr(B) PLUS  expr(C).   { A = B + C; }
@@ -81,8 +104,10 @@ P ::= "A".
 // 
 // 
 // 	ParseFree(pParser, free );
-	puts("parsing 5+5");
-	if(ParseReadString("5+5", "<string>", "DEBUG: ") != 0) {
+	char * s = "PL5+5*5 <<H\n k \nH\n<<K\nK PL j";
+	s = "\"PA\" \"PL\" \"PB\" ";
+	printf("parsing %s\n", s);
+	if(ParseReadString(s, "<string>", "DEBUG: ") != 0) {
 		printf("Error\n");
 	} else printf("Success\n");
 

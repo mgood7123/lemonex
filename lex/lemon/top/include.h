@@ -15,3 +15,13 @@
 
 struct pstate;
 struct lemon;
+#include <stdbool.h>
+#include "../../../../ccr_resources_REAL/Scripts/Shell/builtins/regex_str.h"
+#include "../../../../ccr_resources_REAL/Scripts/Shell/builtins/env.h"
+#include "../../../../ccr_resources_REAL/Scripts/Shell/builtins/printfmacro.h"
+char ** x_e = NULL;
+int x_e_idx = 0;
+
+void x_e_free(void) {
+	  if (env__size(x_e)) env__free(x_e);
+}

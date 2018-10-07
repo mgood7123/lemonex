@@ -13,6 +13,11 @@
   }
 
   tplt_xfer(lemp->name,in,out,&lineno);
+//   puts("\ngenerating trace of state machine\n");
+//   findtrace(lemp, stdout, &lineno);
+//   puts("\ngenerating compact reduced state machine to stdout\n");
+//   lx_generate_output_bt(lemp, stdout, &lineno);
+  puts("\ngenerating full state machine to file\n");
   lx_generate_output(lemp, out, &lineno);
   tplt_xfer(lemp->name,in,out,&lineno);
 #endif

@@ -1681,11 +1681,19 @@ struct LxAstNode{
   struct LxAstNode *rhs;
   int ch0;
   int ch1;
+  int is_variable;
+  char * variable_name;
+  int idx;
+  char * mode;
 };
 
 struct LxTransition{
   int ch0;
   int ch1;
+  int is_variable;
+  char * variable_name;
+  int idx;
+  char * mode;
   int tx_type;
   int is_drop;
   int is_capturing;

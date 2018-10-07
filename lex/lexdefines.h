@@ -47,6 +47,8 @@
 #define lex_lemon_ReportTable_step_h
 #define lex_lemon_ReportTable_step_1_h
 #define lex_lemon_ReportTable_step_h
+#define lex_lemon_ReportTable_step_nesting_h
+#define lex_lemon_ReportTable_step_h
 #define lex_lemon_ReportTable_step_3_h
 #define lex_lemon_ReportTable_h
 #define lex_lemon_ReportTable_if_h

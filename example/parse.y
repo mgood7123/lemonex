@@ -29,7 +29,7 @@ LEAVE_MLCOMMENT ::= "\*/". [<] { printf("COMMENT_%s: %s\n", "END", $$.buf); }
 WS ::= ".*". {
 	printf("COMMENT_%s: %s\n", "CONTENTS", $$.buf);
 	puts("parsing...");
-	  if(ParseReadString($$.buf, "<string>", "DEBUG: ") != 0) {
+	  if(LX_REPARSE($$.buf) != 0) {
     printf("Error\n");
   } else printf("Success\n");
 }

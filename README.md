@@ -128,17 +128,26 @@ included is lemon_original.c and lempar_original.c, the files wich i believe thi
 
 among the updates are:
 
-* updated testall.sh (https://github.com/mgood7123/lemonlex/tree/master/testall.sh) so it now correctly preforms the tests, where is before linux was not correctly detected
-* bug fixes for lemon
+* updated testall.sh (https://github.com/mgood7123/lemonlex/tree/master/testall.sh) so it now correctly preforms the tests, where is before linux was not correctly detected, and contains tests for my changes to the lexer
+* additions to lemon
+	* alot
+* bug fixes in lemon
 	* -d option now working correctly and can correctly handle more path cases
 	* slightly more meaningfull debug output
 	* -m now generates a header file, and excludes the generated defines from the generated parser as they are generated in the header file instead
-* lemon now handles %token directive
+	* nesting now works correctly, handling of $$.buf is not recursive safe yet but can be worked around by reparsing $$.buf that contains the nest token, and defining the nest token in the main symbol
+* lemon now handles 
+	* %token directive
+	* $variables, $arrays[], and $functions(), in which these are specified after ::= directive, and thus $ is added to the "Expected ..." message where appropriate, ALL variables/arrays/functions must result in type [char *], eg char ** a; char * aa();char * aaa;  $a[0] $aa(), $aaa, NOTE: supports $"" since technically a string literal is a char * but it quotes them instead, resulting in ::= $"P" == ::= "\"P\"", it is undecided whether i should keep this behavour or not
+* new definitions in lexer
+	* LX_NESTMAX and LX_NESTLEVEL definitions
+	* LX_REPARSE, alias for ParseReadString, accepts only a string as the first argument for easier readability, eg LX_REPARSE("hi"); vs ParseReadString("hi, "<string>", "DEBUG:");
 * a re-structured template (https://github.com/mgood7123/lemonlex/tree/master/lempar.c)
 	* function prototypes that are needed for internal functions can now be added, these are inserted BEFORE any %include code is generated
 	* control defines are inserted and generated BEFORE function prototypes instead of after %include code, as these are needed by internal functions
 	* after-include %include code is inserted BEFORE control defines instead of after %include code
 	* assert.h and stdlib inserted due to the template requiring assert(), malloc() and free()
+	* nesting definitions are included BEFORE function prototypes
 * lex folder (https://github.com/mgood7123/lemonlex/tree/master/lex)
 	* this is the guts of the builtin lexer that i have seperated from lemon.c (https://github.com/mgood7123/lemonlex/tree/master/lemon.c) to make it easier to work with and easier to add or remove stuff instead of scrolling though thousands of lines to find code related to the lexer, all of the lexer code is now all in this folder
 	* (i attempted to do the same to lempar (lempar_include.c) but unfortunatly that gets probogated to the generated parser and thus the files would need to be copied to where-ever the user outputs the generated parser to in order for it to compile which would be too much work)

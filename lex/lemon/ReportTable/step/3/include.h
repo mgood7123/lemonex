@@ -2,8 +2,6 @@
 // inside void ReportTable(
 #ifdef LEMONEX
   fprintf(out,"#ifdef LEMONEX\n"); lineno++;
-  fprintf(out,"#define %sLX_INTEGRATEDMODE %d\n", name, lemp->lxintegration); lineno++;
-  fprintf(out,"#define %sLX_NESTINGDEPTH %d\n", name, lemp->lxnestingdepth); lineno++;
   tplt_xfer(lemp->name,in,out,&lineno);
 
   /* Generate code which executes when token needs to be created */
