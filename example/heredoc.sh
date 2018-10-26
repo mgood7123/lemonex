@@ -1,9 +1,9 @@
 rm -rf example/heredoc
-binary/lemon -d./example/heredoc example/heredoc.y -m -s &&
+binary/lemon -d./example/heredoc example/heredoc.y -m &&
 gcc example/heredoc/heredoc.c -o example/heredoc/m &&
 example/heredoc/m &&
-ls example/heredoc &&
-cat example/heredoc/heredoc.h &&
+# ls example/heredoc &&
+# cat example/heredoc/heredoc.h &&
 exit 0
 
 

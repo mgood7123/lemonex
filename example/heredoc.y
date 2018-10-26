@@ -1,12 +1,11 @@
-%lexer_debuglevel HIGH.
+// %lexer_debuglevel HIGH.
 %include {
 	char * CAT[LX_NESTMAX] = {0};
 // 	char * AAA = "AAA";
 }
 
 rModule ::= .
-// DD ::= $AAA. [D] { printf("AAA_%s: %s\n", "START", $$.buf); }
-HEREDOC ::= "<<.*[\n ]". [CAT] {											//			<--------------------- NESTING ENTER
+HEREDOC ::= "<<.*[\n ]". [CAT] {
 	CAT[LX_NESTLEVEL] = $$.buf;
 	int len = strlen(CAT[LX_NESTLEVEL]);
 	if (CAT[LX_NESTLEVEL][len-1] == ' ' || CAT[LX_NESTLEVEL][len-1] == '\n') {
@@ -28,20 +27,14 @@ HEREDOC ::= "<<.*[\n ]". [CAT] {											//			<--------------------- NESTING E
 	CAT[LX_NESTLEVEL+1] += 2;
 }
 LEAVE_HEREDOC ::= $CAT[LX_NESTLEVEL]. [<] { printf("E: %s\n", $$.buf); }					//			<--------------------- NESTING EXIT
-WS ::= ".*". {
-	printf("CAT[LX_NESTLEVEL-1]_%s: %s\n", "CONTENTS", $$.buf);
-// 	puts("parsing...");
-// 	if(LX_REPARSE($$.buf) != 0) {
-// 		printf("Error\n");
-// 	} else printf("Success\n");
-}
-// %lexer_mode D.
-// LEAVE_MLCOMMENT ::= $AAA. [<] { printf("AAA_%s: %s\n", "END", $$.buf); }	//			<--------------------- NESTING EXIT
-// WS ::= ".*". { printf("AAA_%s: %s\n", "CONTENTS", $$.buf); }
+WS ::= ".*". { printf("CAT[LX_NESTLEVEL-1]_%s: %s\n", "CONTENTS", $$.buf); }
+
 %code {
 	int main()
 	{
-// 		LX_REPARSE("<<CAT[LX_NESTLEVEL] HEREDOC<<EOF <<CAT[LX_NESTLEVEL] <<EOF K <<CAT[LX_NESTLEVEL]");
-		LX_REPARSE("<<CAT <<EOF EOF CAT");
+// 		LX_REPARSE("cat <<CAT <<EOF K EOF KK CAT");
+// 		LX_REPARSE("cat <<CAT\n<<EOF\nK\nEOF\nKK\nCAT");
+// 		LX_REPARSE("cat <<g\n ; kde\nf rg\nthdt\nAbc\ng\n");
+		LX_REPARSE("cat fbrftd frtdb <<g err -n\n ; kde\nf rg\nthdt\nAbc\ng\n");
 	}
 }

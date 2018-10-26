@@ -13,7 +13,7 @@
 #include <errno.h>
 #include <err.h>
 #include <stdbool.h>
-#include "../ccr_resources_REAL/Scripts/Shell/builtins/regex_str.h"
+#include "../CCR/Scripts/Shell/builtins/regex_str.h"
 
 void defwrite(char * file, char * mode, char * contents) {
     FILE * t = fopen(file, mode);

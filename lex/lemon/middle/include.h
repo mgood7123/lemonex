@@ -1611,19 +1611,19 @@ char * get_name(struct LxState* curr_state, struct LxTransition* tx, int * nn) {
 				printf("Internal error: unknown range\n");
 		}
 	}else if(tx->ch1 == 0){
-		str_new(q);
-		str_new(ch);
-		str_insert_char(ch, tx->ch0);
-		str_insert_char(ch, '\0');
-		str_insert_string(q, ch.string);
-		str_free(ch);
 		if (tx->is_variable) {
 			return tx->variable_name;
 		} else {
+			str_new(q);
+			str_new(ch);
+			str_insert_char(ch, tx->ch0);
+			str_insert_char(ch, '\0');
+			str_insert_string(q, ch.string);
+			str_free(ch);
 			n = strdup(q.escaped.string);
 			*nn=true;
+			str_free(q);
 		}
-		str_free(q);
 	}
 	if (n != NULL) return n;
 	return NULL;

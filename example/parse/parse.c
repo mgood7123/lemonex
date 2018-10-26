@@ -78,8 +78,8 @@ struct lxToken{
 #endif /* LEMONEX */
 #endif
 typedef union {
-  int yyinit;
-  ParseTOKENTYPE yy0;
+	int yyinit;
+	ParseTOKENTYPE yy0;
 } YYMINORTYPE;
 #ifndef YYSTACKDEPTH
 #define YYSTACKDEPTH 100
@@ -94,34 +94,10 @@ typedef union {
 #endif
 #define ParseARG_SDECL
 #endif
-/* declare function definitions here, this will be blank if there are no definitions */
-int ParseReadString(
-  char *buf
-  ,const char *filename
-  ,const char* dbgpfx
-  ParseARG_PDECL               /* Optional %extra_argument parameter */
-);
-/* First off, code is included that follows the "include" declaration
-** in the input grammar file. */
-#line 3 "./example/parse.y"
-
-#include <string.h>
-#line 109 "example/parse/parse.c"
-#define LEMONEX_DBGLVL 0
-#include "parse.h"
-/* Next is all token values, in a form suitable for use by makeheaders.
-** This section will be null unless lemon is run with the -m switch.
-*/
-/* 
-** These constants (all generated automatically by the parser generator)
-** specify the various kinds of tokens (terminals) that the parser
-** understands. 
-**
-** Each symbol here is a terminal symbol in the grammar.
-*/
 #ifdef LEMONEX
 #define ParseLX_INTEGRATEDMODE 1
 #define ParseLX_NESTINGDEPTH 32
+#endif
 #if LEMONEX
 #ifdef ParseLX_NESTINGDEPTH
 struct lxNestingFrame {
@@ -144,7 +120,40 @@ struct lxLexer {
 #endif
 };
 typedef struct lxLexer lxLexer;
+#ifdef ParseLX_NESTINGDEPTH
+#define LX_NESTLEVEL (lxpLexer->nestinglevel-(lxpLexer->nestinglevel==0?0:lxpLexer->nestinglevel)) + lxpLexer->nestingstack[(lxpLexer->nestinglevel==0?1:lxpLexer->nestinglevel)-1].count
+#define LX_NESTMAX ParseLX_NESTINGDEPTH
+#else
+#define LX_NESTLEVEL 0
+#define LX_NESTMAX 0
+#endif
 
+/* declare function definitions here, this will be blank if there are no definitions */
+int ParseReadString(
+  char *buf
+  ,const char *filename
+  ,const char* dbgpfx
+  ParseARG_PDECL               /* Optional %extra_argument parameter */
+);
+/* First off, code is included that follows the "include" declaration
+** in the input grammar file. */
+#line 3 "./example/parse.y"
+
+#include <string.h>
+#line 143 "example/parse/parse.c"
+#define LEMONEX_DBGLVL 0
+#include "parse.h"
+/* Next is all token values, in a form suitable for use by makeheaders.
+** This section will be null unless lemon is run with the -m switch.
+*/
+/* 
+** These constants (all generated automatically by the parser generator)
+** specify the various kinds of tokens (terminals) that the parser
+** understands. 
+**
+** Each symbol here is a terminal symbol in the grammar.
+*/
+#ifdef LEMONEX
 #ifdef ParseLX_NESTINGDEPTH
 static int lx_enternesting(
   lxLexer *lxpLexer,           /* The lexer */
@@ -185,6 +194,10 @@ static int lx_leavenesting(
 		printf("NEST:cannot leave empty nest\n");
 		printf("NEST:leave-level:%d\n", lxpLexer->nestinglevel);
 		return -1;
+	}
+	if (lxpLexer->nestingstack[lxpLexer->nestinglevel-1].count != 0) {
+		lxpLexer->nestingstack[lxpLexer->nestinglevel-1].count--;
+		return 0;
 	}
 #if LEMONEX_DBGLVL>=2
   printf("NEST:leave-level:%d\n", lxpLexer->nestinglevel);
@@ -952,16 +965,16 @@ static int lxcls_e[] = {
   0x964   ,0x965   ,  0,0
 };
 #endif
-#define YYNSTATE             2
-#define YYNRULE              1
-#define YY_MAX_SHIFT         1
-#define YY_MIN_SHIFTREDUCE   2
-#define YY_MAX_SHIFTREDUCE   2
-#define YY_MIN_REDUCE        3
-#define YY_MAX_REDUCE        3
-#define YY_ERROR_ACTION      4
-#define YY_ACCEPT_ACTION     5
-#define YY_NO_ACTION         6
+#define YYNSTATE						 2
+#define YYNRULE							1
+#define YY_MAX_SHIFT				 1
+#define YY_MIN_SHIFTREDUCE	 2
+#define YY_MAX_SHIFTREDUCE	 2
+#define YY_MIN_REDUCE				3
+#define YY_MAX_REDUCE				3
+#define YY_ERROR_ACTION			4
+#define YY_ACCEPT_ACTION		 5
+#define YY_NO_ACTION				 6
 
 /* returns 1 if ch is in cls */
 static int lx_isclass(int ch, int* clsl){
@@ -1143,15 +1156,15 @@ static const YYCODETYPE yy_lookahead[] = {
 };
 #define YY_SHIFT_USE_DFLT (-5)
 #define YY_SHIFT_COUNT (1)
-#define YY_SHIFT_MIN   (-4)
-#define YY_SHIFT_MAX   (2)
+#define YY_SHIFT_MIN	 (-4)
+#define YY_SHIFT_MAX	 (2)
 static const signed char yy_shift_ofst[] = {
  /*     0 */    -4,    2,
 };
 #define YY_REDUCE_USE_DFLT (-6)
 #define YY_REDUCE_COUNT (0)
-#define YY_REDUCE_MIN   (-5)
-#define YY_REDUCE_MAX   (0)
+#define YY_REDUCE_MIN	 (-5)
+#define YY_REDUCE_MAX	 (0)
 static const signed char yy_reduce_ofst[] = {
  /*     0 */    -5,
 };
@@ -1258,8 +1271,8 @@ void ParseTrace(FILE *TraceFILE, char *zTracePrompt){
 /* For tracing shifts, the names of all terminals and nonterminals
 ** are required.  The following table supplies these names */
 static const char *const yyTokenName[] = { 
-  "$",             "STR",           "U3",            "STR3",        
-  "EOF",           "error",         "rModule",     
+	"$",           	"STR",         	"U3",          	"STR3",        
+	"EOF",         	"error",       	"rModule",     
 };
 #endif /* NDEBUG */
 
@@ -1351,15 +1364,15 @@ static void yy_destructor(
     ** which appear on the RHS of the rule, but which are not used
     ** inside the C code.
     */
-      /* TERMINAL Destructor */
-    case 1: /* STR */
-    case 2: /* U3 */
-    case 3: /* STR3 */
-    case 4: /* EOF */
+			/* TERMINAL Destructor */
+		case 1: /* STR */
+		case 2: /* U3 */
+		case 3: /* STR3 */
+		case 4: /* EOF */
 #ifdef LEMONEX
       LX_FREETOK;
 #endif /*LEMONEX*/
-      break;
+			break;
     default:  break;   /* If no destructor action specified: do nothing */
   }
 }
@@ -1613,7 +1626,7 @@ static const struct {
   YYCODETYPE lhs;         /* Symbol on the left-hand side of the rule */
   unsigned char nrhs;     /* Number of right-hand side symbols in the rule */
 } yyRuleInfo[] = {
-  { 6, 1 },
+	{ 6, 1 },
 };
 
 static void yy_accept(yyParser*);  /* Forward Declaration */
@@ -1669,15 +1682,15 @@ static void yy_reduce(
   **  #line <lineno> <thisfile>
   **     break;
   */
-      case 0: /* rModule ::= EOF */
+			case 0: /* rModule ::= EOF */
 #line 22 "./example/parse.y"
 {
-  yy_destructor(yypParser,4,&yymsp[0].minor);
+	yy_destructor(yypParser,4,&yymsp[0].minor);
 }
-#line 2903 "example/parse/parse.c"
-        break;
-      default:
-        break;
+#line 2916 "example/parse/parse.c"
+				break;
+			default:
+				break;
   };
   yygoto = yyRuleInfo[yyruleno].lhs;
   yysize = yyRuleInfo[yyruleno].nrhs;
@@ -1738,7 +1751,7 @@ static void yy_syntax_error(
 #line 7 "./example/parse.y"
 
   puts("Syntax error!");
-#line 2967 "example/parse/parse.c"
+#line 2980 "example/parse/parse.c"
   ParseARG_STORE; /* Suppress warning about unused %extra_argument variable */
 }
 
@@ -1760,7 +1773,7 @@ static void yy_accept(
 #line 11 "./example/parse.y"
 
   puts("parsing complete!");
-#line 2989 "example/parse/parse.c"
+#line 3002 "example/parse/parse.c"
   ParseARG_STORE; /* Suppress warning about unused %extra_argument variable */
 }
 
@@ -2009,9 +2022,9 @@ L0:
     case 16:goto S16;
   }
 S1:
-  /*1[47(/)-0( )]->3:tx_type:0, is_cap:1*/ if(ch == 47 /* decimal is required for full unicode support, printable character is '/' */ ){LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(3);goto S3; /*1*/}
-  /*1[97(a)-0( )]->5:tx_type:0, is_cap:1*/ if(ch == 97 /* decimal is required for full unicode support, printable character is 'a' */ ){LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(5);goto S5; /*1*/}
-  /*1[0( )-5( )]->2:tx_type:0, is_cap:0*/  if(ch != 0){LX_ADVANCE(2);goto S2; /*1*/}
+ if(ch == 47 /* decimal is required for full unicode support, printable character is '/' */ ){LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(3);goto S3; /*1*/}
+ if(ch == 97 /* decimal is required for full unicode support, printable character is 'a' */ ){LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(5);goto S5; /*1*/}
+  if(ch != 0){LX_ADVANCE(2);goto S2; /*1*/}
   lxpLexer->lxstate=1;return 0;
   
 S2:
@@ -2020,7 +2033,7 @@ S2:
   if(ch == 0) {LX_SEND(0);return 0;}
   goto S1; /* by init_state */
 S3:
-  /*3[42(*)-0( )]->4:tx_type:0, is_cap:1*/ if(ch == 42 /* decimal is required for full unicode support, printable character is '*' */ ){LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(4);goto S4; /*1*/}
+ if(ch == 42 /* decimal is required for full unicode support, printable character is '*' */ ){LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(4);goto S4; /*1*/}
   if(ch == 0){lxpLexer->lxstate=3;return 0;}
   goto S2; /* by goto_state */
 S4:
@@ -2036,15 +2049,15 @@ S5:
   LX_ENTER_NESTING(1);
   goto S12; /* by retn_state */
 S6:
-  /*6[42(*)-0( )]->7:tx_type:0, is_cap:1*/ if(ch == 42 /* decimal is required for full unicode support, printable character is '*' */ ){LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(7);goto S7; /*1*/}
-  /*6[42(*)-0( )]->7:tx_type:2, is_cap:1*/ if(ch == 42 /* decimal is required for full unicode support, printable character is '*' */ ){  LX_ACTION(6);/*NO_SEND*/LX_RESET;LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(7);goto S7; /*1*/}
-  /*6[0( )-0( )]->9:tx_type:4, is_cap:0*/  /*loop --> 9*/
-  /*6[0( )-5( )]->11:tx_type:0, is_cap:1*/  if(ch != 0){LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(11);goto S11; /*1*/}
+ if(ch == 42 /* decimal is required for full unicode support, printable character is '*' */ ){LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(7);goto S7; /*1*/}
+ if(ch == 42 /* decimal is required for full unicode support, printable character is '*' */ ){  LX_ACTION(6);/*NO_SEND*/LX_RESET;LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(7);goto S7; /*1*/}
+  /*loop --> 9*/
+  if(ch != 0){LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(11);goto S11; /*1*/}
   if(is_final == 0) {lxpLexer->lxstate=6;return 0;}
   LX_SEND(0);return 0;
   
 S7:
-  /*7[47(/)-0( )]->8:tx_type:0, is_cap:1*/ if(ch == 47 /* decimal is required for full unicode support, printable character is '/' */ ){LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(8);goto S8; /*1*/}
+ if(ch == 47 /* decimal is required for full unicode support, printable character is '/' */ ){LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(8);goto S8; /*1*/}
   if(ch == 0){lxpLexer->lxstate=7;return 0;}
   goto S9; /* by goto_state */
 S8:
@@ -2054,8 +2067,8 @@ S8:
   if(LX_LEAVE_NESTING() == 1){goto L0;}
   goto S6; /* by next_state */
 S9:
-  /*9[42(*)-0( )]->7:tx_type:2, is_cap:1*/ if(ch == 42 /* decimal is required for full unicode support, printable character is '*' */ ){  LX_ACTION(9);/*NO_SEND*/LX_RESET;LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(7);goto S7; /*1*/}
-  /*9[0( )-5( )]->10:tx_type:0, is_cap:1*/  if(ch != 0){LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(10);goto S10; /*1*/}
+ if(ch == 42 /* decimal is required for full unicode support, printable character is '*' */ ){  LX_ACTION(9);/*NO_SEND*/LX_RESET;LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(7);goto S7; /*1*/}
+  if(ch != 0){LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(10);goto S10; /*1*/}
   if(is_final == 0) {lxpLexer->lxstate=9;return 0;}
   LX_SEND(0);return 0;
   
@@ -2064,10 +2077,10 @@ S10:
 S11:
   goto S10; /* by goto_state */
 S12:
-  /*12[99(c)-0( )]->13:tx_type:0, is_cap:1*/ if(ch == 99 /* decimal is required for full unicode support, printable character is '\c' */ ){LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(13);goto S13; /*1*/}
-  /*12[99(c)-0( )]->13:tx_type:2, is_cap:1*/ if(ch == 99 /* decimal is required for full unicode support, printable character is '\c' */ ){  LX_ACTION(12);/*NO_SEND*/LX_RESET;LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(13);goto S13; /*1*/}
-  /*12[0( )-0( )]->14:tx_type:4, is_cap:0*/  /*loop --> 14*/
-  /*12[0( )-5( )]->16:tx_type:0, is_cap:1*/  if(ch != 0){LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(16);goto S16; /*1*/}
+ if(ch == 99 /* decimal is required for full unicode support, printable character is 'c' */ ){LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(13);goto S13; /*1*/}
+ if(ch == 99 /* decimal is required for full unicode support, printable character is 'c' */ ){  LX_ACTION(12);/*NO_SEND*/LX_RESET;LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(13);goto S13; /*1*/}
+  /*loop --> 14*/
+  if(ch != 0){LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(16);goto S16; /*1*/}
   if(is_final == 0) {lxpLexer->lxstate=12;return 0;}
   LX_SEND(0);return 0;
   
@@ -2078,8 +2091,8 @@ S13:
   if(LX_LEAVE_NESTING() == 1){goto L0;}
   goto S12; /* by next_state */
 S14:
-  /*14[99(c)-0( )]->13:tx_type:2, is_cap:1*/ if(ch == 99 /* decimal is required for full unicode support, printable character is '\c' */ ){  LX_ACTION(14);/*NO_SEND*/LX_RESET;LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(13);goto S13; /*1*/}
-  /*14[0( )-5( )]->15:tx_type:0, is_cap:1*/  if(ch != 0){LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(15);goto S15; /*1*/}
+ if(ch == 99 /* decimal is required for full unicode support, printable character is 'c' */ ){  LX_ACTION(14);/*NO_SEND*/LX_RESET;LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(13);goto S13; /*1*/}
+  if(ch != 0){LX_CAPTURE(curr_pos, curr_len);LX_ADVANCE(15);goto S15; /*1*/}
   if(is_final == 0) {lxpLexer->lxstate=14;return 0;}
   LX_SEND(0);return 0;
   
@@ -2124,7 +2137,9 @@ int lx_alloc_parser(
 
 #if LEMONEX_DBGLVL>=1
   if(dbgpfx != 0) {
+#ifndef NDEBUG
     ParseTrace(stdout, (char*)dbgpfx);
+#endif
   }
 #endif
   return 0;
@@ -2243,4 +2258,4 @@ int main(int argc, char* argv[]) {
   } else printf("Success\n");
   return 0;
 }
-#line 3472 "example/parse/parse.c"
+#line 3487 "example/parse/parse.c"

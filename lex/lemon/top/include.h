@@ -16,9 +16,9 @@
 struct pstate;
 struct lemon;
 #include <stdbool.h>
-#include "../../../../ccr_resources_REAL/Scripts/Shell/builtins/regex_str.h"
-#include "../../../../ccr_resources_REAL/Scripts/Shell/builtins/env.h"
-#include "../../../../ccr_resources_REAL/Scripts/Shell/builtins/printfmacro.h"
+#include "../../../../CCR/Scripts/Shell/builtins/regex_str.h"
+#include "../../../../CCR/Scripts/Shell/builtins/env.h"
+#include "../../../../CCR/Scripts/Shell/builtins/printfmacro.h"
 char ** x_e = NULL;
 int x_e_idx = 0;
 
